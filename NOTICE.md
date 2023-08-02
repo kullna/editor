@@ -1,3 +1,8 @@
+## Acknowledgements
+
+We'd like to thank Anton Medvedev for his work on CodeJar which helped give us a jumpstart on this compoonent. His minimalist online editor clarified a number of confusing and somewhat obscure browser-based editing APIs for us.
+
+```
 MIT License
 
 Copyright (c) 2020 Anton Medvedev
@@ -19,3 +24,4 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+```

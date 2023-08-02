@@ -5,14 +5,13 @@
       "ES2021",
       "DOM"
     ],
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "moduleResolution": "node",
     "strict": true,
     "declaration": true,
     "noUnusedLocals": true,
     "outDir": "./dist",
   },
   "include": [
-    "**/*.ts"
-  ],
+    "src/*.ts"
+, "src/editor.ts"  ],
 }

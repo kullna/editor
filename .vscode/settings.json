@@ -1,0 +1,10 @@
+{
+  "editor.codeActionsOnSave": {
+    "source.fixAll.prettier": true
+  },
+  "files.eol": "\n",
+  "editor.formatOnSave": true,
+  "files.associations": {"*.json": "jsonc"},
+  "jest.autoRun": "off",
+  "editor.defaultFormatter": "esbenp.prettier-vscode"
+}

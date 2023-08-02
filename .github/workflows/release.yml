@@ -1,0 +1,31 @@
+##.github/workflows/release.yml
+name: Release & Publish to NPM
+on: workflow_dispatch
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v2
+      - name: Install the dependencies
+        run: npm install
+      - name: Initialise the NPM config
+        run: npm config set //registry.npmjs.org/:_authToken $NPM_TOKEN
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Initialize Git user
+        run: |
+          git config --global user.email "StevenEWright@users.noreply.github.com"
+          git config --global user.name "Steven E Wright"
+      - name: Change git remote to use SSH
+        run: |
+          git remote set-url origin git@github.com:kullna/editor.git
+      - name: Attach SSH key
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      - name: Run release
+        run: npm run release --ci
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

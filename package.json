@@ -1,49 +1,114 @@
 {
-  "name": "codejar",
-  "description": "An embeddable code editor for the browser",
-  "version": "4.2.0",
+  "name": "@kullna/editor",
+  "description": "A small but feature-rich code editor for the web",
+  "version": "0.1.1",
   "type": "module",
-  "main": "./dist/codejar.js",
-  "types": "./dist/codejar.d.ts",
+  "main": "./dist/kullna-editor.esm.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./dist/codejar.js",
-    "./cursor": "./dist/cursor.js"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/kullna-editor.esm.js",
+      "require": "./dist/kullna-editor.min.js"
+    }
   },
+  "./package.json": "./package.json",
   "typesVersions": {
     "*": {
       ".": [
-        "./dist/codejar.d.ts"
-      ],
-      "cursor": [
-        "./dist/cursor.d.ts"
+        "./dist/index.d.ts"
       ]
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "*.md"
   ],
   "scripts": {
-    "start": "tsc -w",
-    "build": "tsc",
-    "size": "minify ./dist/codejar.js --sourceType module | gzip-size",
-    "release": "release-it"
+    "build": "rollup --config rollup.config.js",
+    "build:watch": "rollup --config rollup.config.js --watch",
+    "release": "release-it",
+    "start": "concurrently --kill-others --names rollup,web-dev-server \"npm run build:watch\" \"web-dev-server --app-index demo.html --node-resolve --open --watch\""
   },
   "devDependencies": {
-    "babel-minify": "^0.5.2",
-    "gzip-size-cli": "^5.1.0",
+    "@commitlint/cli": "^17.6.7",
+    "@commitlint/config-conventional": "^17.6.7",
+    "@rollup/plugin-babel": "^6.0.3",
+    "@rollup/plugin-terser": "^0.4.3",
+    "@rollup/plugin-typescript": "^11.1.2",
+    "@types/node": "^20.4.6",
+    "@typescript-eslint/eslint-plugin": "^6.2.1",
+    "@typescript-eslint/parser": "^6.2.1",
+    "@web/dev-server": "^0.3.0",
+    "concurrently": "^8.2.0",
+    "eslint": "^8.46.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.2.3",
+    "prettier": "^2.8.8",
     "release-it": "^16.1.3",
-    "typescript": "^5.1.6"
+    "rollup": "^3.27.1",
+    "rollup-plugin-typescript2": "^0.35.0",
+    "typescript": "^4.9.5"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "release-it": {
+    "git": {
+      "requireCleanWorkingDir": false,
+      "requireBranch": "main",
+      "commitMessage": "chore: release v${version}"
+    },
     "github": {
       "release": true
+    },
+    "npm": {
+      "publish": true
     },
     "hooks": {
       "after:bump": "npm run build"
     }
   },
-  "license": "MIT",
-  "repository": "antonmedv/codejar",
-  "author": "Anton Medvedev <anton@medv.io>",
-  "homepage": "https://medv.io/codejar/"
+  "license": "LGPL",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kullna/editor.git"
+  },
+  "author": {
+    "name": "The Kullna Programming Language Project",
+    "url": "https://www.kullna.org/"
+  },
+  "homepage": "https://editor.kullna.org/",
+  "keywords": [
+    "code-editor",
+    "text-editor",
+    "browser"
+  ],
+  "bugs": {
+    "url": "https://github.com/kullna/editor/issues"
+  },
+  "lint-staged": {
+    "src/*.{ts,js}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "**/*.yml": [
+      "prettier --write"
+    ],
+    "**/*.json": [
+      "prettier --write"
+    ],
+    "**/*.md": [
+      "prettier --write"
+    ],
+    "**/*.html": [
+      "prettier --write"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged --relative",
+      "pre-push": "tsc"
+    }
+  }
 }

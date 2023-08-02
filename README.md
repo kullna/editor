@@ -1,136 +1,208 @@
-<p align="center"><a href="https://medv.io/codejar/"><img src="https://medv.io/assets/codejar.svg" width="72"></a></p>
-<h3 align="center">CodeJar – an embeddable code editor for the browser</h3>
-<p align="center"><a href="https://medv.io/codejar/"><img src="https://medv.io/assets/codejar/screenshot.png" width="709"></a></p>
+<p align="center"><a href="https://editor.kullna.org/"><img src="https://www.kullna.org/brand/logo.svg" width="150"></a></p>
+<h1 align="center">@kullna/editor</h1>
+<h3 align="center">A small but feature-rich code editor for the web</h3>
 
-[![npm](https://img.shields.io/npm/v/codejar?color=brightgreen)](https://www.npmjs.com/package/codejar)
-[![npm bundle size](https://img.shields.io/bundlephobia/minzip/codejar?label=size)](https://bundlephobia.com/result?p=codejar)
+<p align="center"><img src="assets/images/screenshot.png" width="718" alt="screenshot"></p>
+<p align="center"><a href="https://editor.kullna.org/demo.html">Try the Demos</a> - <a href="https://editor.kullna.org/docs.html">Read the Docs</a> - <a href="https://editor.kullna.org/CONTRIBUTING.html">Contribute</a></p>
 
-## Features
+<p align="center">
+<a href="https://cdn.jsdelivr.net/npm/@kullna/editor/dist/kullna-editor.min.js"><img src="https://img.shields.io/badge/CDN-JSDelivr-2aa198" alt="CDN"></a>
+<a href="https://www.npmjs.com/package/kullna/editor"><img src="https://img.shields.io/npm/v/@kullna/editor?color=dc322f" alt="npm"></a>
+<a href="https://bundlephobia.com/package/@kullna/editor"><img src="https://badgen.net/bundlephobia/minzip/@kullna/editor?label&color=dc322f" alt="npm bundle size"></a>
+<a href="https://www.gnu.org/licenses/lgpl-3.0"><img src="https://img.shields.io/badge/License-LGPL_v3-blue.svg" alt="License: LGPL v3"></a>
+<a href="https://github.com/kullna/editor"><img src="https://img.shields.io/badge/Source-GitHub-268bd2" alt="Source on GitHub"></a>
+<a href="https://discord.kullna.org/"><img src="https://img.shields.io/badge/Chat-Discord-6c71c4" alt="Chat on Discord"></a>
+</p>
 
-* Lightweight (**2.45 kB** only)
-* No dependencies
-* Preserves indentation on a new line
-* Adds closing brackets, quotes
-* Indents line with the **Tab** key
-* Supports **undo**/**redo** 
+# About
 
-## Getting Started
+`@kullna/editor` is a small but feature-rich code editor for the web maintained by
+[The Kullna Programming Language Project](https://www.kullna.org); a web-based platform for teaching
+programming to children in their native language.
 
-Install CodeJar 🍯 &nbsp; via npm:
+In building Kullna, we needed a robust code editor that supports syntax highlighting, maintaining
+and managing code-style indentation, line highlighting, a customizable gutter for setting
+breakpoints and bookmarks, and sufficient flexibility to support auto-complete and inline-help. It
+also had to support RTL.
 
-```bash
-npm i codejar
-```
+In surveying the landscape of code editors, we found that most of the popular editors (such as
+[CodeMirror](https://codemirror.net/), [Ace](https://ace.c9.io/), and
+[Monaco](https://microsoft.github.io/monaco-editor/)) are large and complex, and that most of the
+lightweight editors ([CodeJar](https://medv.io/codejar/)) are not robust enough to support our
+needs.
 
-Create an element and init the CodeJar 🍯:
+CodeMirror had tentative RTL support in the past, but that support was explicitly dropped in version
+6.0 - a fact that highlighted for us the risk of relying on a large and complex library we couldn't
+easily contribute to or maintain ourselves if we needed to. Since this is a core component of our
+platform, we could not afford to rely on a library that might drop support for mission-critical
+features we rely on, or that we could not easily contribute to or maintain ourselves.
+
+In looking at the lightweight editors, we found that CodeJar is a very nice, small and simple
+editor, but that it is not designed to be a full-featured code editor. It is designed to be a
+minimalist editor for very light editing or display. It does not support gutters (for things like
+breakpoints and bookmarks) or line highlighting, and has performance issues with mid to large size
+files - which make it unsuitable for our use case.
+
+For all these reasons, we decided we had no choice but to build our own editor. Fortunately, CodeJar
+provided a good starting point for us, and we were able to build on top of it quickly and add the
+features we needed.
+
+In deciding to build our own editor, we realized that there are likely others who have similar
+needs, and they might be able to contribute feedback, ideas, and code back if we made it available
+as a supported, standalone library.
+
+So, if you're like us and you need a code editor that is small and simple, yet has sufficient
+features to support a robust code editing experience, and is actively maintained, then this library
+may be for you. Here's a few reasons why we think you might want to consider using it and
+contributing to it:
+
+- **Not too small and simple** - it has all the features you need to support a robust code editing
+  experience.
+- **Not too big and complex** - you can easily modify it to suit your needs if necessary.
+- **Just right** - it's small and simple enough to be easy to understand and modify, yet robust
+  enough to support a full-featured code editing experience.
+- **Dedicated maintainer** - It's used in the [Kullna IDE](https://ide.kullna.org/), so it will
+  continue to be maintained and improved as we build out the IDE and get feedback from Kullna users.
+- **Comitted to RTL and I18N** - We are committed to maintaining RTL support in this library, and
+  will not drop it in future versions. To our knowledge, this is the only code editor with explicit
+  support for RTL. If you need RTL support, this is the library for you.
+
+Please join us by contributing to this library. We welcome your feedback, ideas, and code
+contributions.
+
+Read the [Contributing](CONTRIBUTING.md) Page for more information.
+
+# Features
+
+- **Lightweight**
+  - **~10 KB** minified UMD
+  - No dependencies
+- **Undo & Redo**
+- **Smart Quotes**
+  - Can automatically insert closing brackets & quotes
+- **Full Indentation Support**
+  - Preserve indentation on new line
+  - Auto-increment or decrement indentation level
+  - Customizable indentation representation (spaces or `\t`)
+  - Multi-line indentation level change support
+- **Robust Optional Gutter**
+  - On the left or the right (to support RTL)
+  - Line numbers
+  - Icons (like breakpoints or bookmarks)
+  - Flexible styling
+- **First-Class Support for RTL**
+- **Easy to Use**
+  - Available as a UMD module
+  - Built in, and supports, TypeScript clients
+  - Integrate via CDN or NPM
+
+# Quick Start
+
+## via CDN with Highlight.js
 
 ```html
-<div class="editor"></div>
+<script src="https://cdn.jsdelivr.net/npm/@kullna/editor/dist/kullna-editor.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/highlight.min.js"></script>
+```
+
+```html
+<div id="editor"></div>
+```
+
+```html
 <script>
-  let jar = CodeJar(document.querySelector('.editor'), highlight)
+  const editorElement = document.querySelector('#editor');
+
+  const editor = KullnaEditor.createEditor(editorElement, {
+    language: 'javascript',
+    highlight: hljs.highlightElement,
+    gutter: {class: 'gutter'}
+  });
 </script>
 ```
 
-Second argument to `CodeJar` is a highlighting function (like Prism.js, highlight.js):
+> 💡 **Tip:** Check out the other options in the [Documentation](docs.md).
 
-```ts
-const highlight = (editor: HTMLElement) => {
-  const code = editor.textContent
-  code = code.replace('foo', '<span style="color: red">foo</span>')
-  editor.innerHTML = code
-}
+## via NPM with Highlight.js
 
-const jar = CodeJar(editor, highlight)
+```bash
+npm i @kullna/editor
+npm i highlight.js
 ```
 
-Third argument to `CodeJar` is options:
-  - `tab: string` replaces "tabs" with given string. Default: `\t`.
-    - Note: use css rule `tab-size` to customize size.
-  - `indentOn: RegExp` allows auto indent rule to be customized. Default `/[({\[]$/`.
-  - `moveToNewLine: RegExp` checks in extra newline character need to be added. Default `/^[)}\]]/`.
-  - `spellcheck: boolean` enables spellchecking on the editor. Default `false`.
-  - `catchTab: boolean` catches Tab keypress events and replaces it with `tab` string. Default: `true`.
-  - `preserveIdent: boolean` keeps indent levels on new line. Default `true`.
-  - `addClosing: boolean` automatically adds closing brackets, quotes. Default `true`.
-  - `history` records history. Default `true`.
-  - `window` window object. Default: `window`.
-
-
-```js
-const options = {
-  tab: ' '.repeat(4), // default is '\t'
-  indentOn: /[(\[]$/, // default is /{$/
-}
-
-const jar = CodeJar(editor, highlight, options)
+```html
+<div id="editor"></div>
 ```
 
-## API
+```html
+<script type="module">
+  import * as KullnaEditor from '@kullna/editor';
+  import hljs from 'highlight.js';
 
-#### `updateCode(string)`
+  const editorElement = document.querySelector('#editor');
 
-Updates the code.
-
-```js
-jar.updateCode(`let foo = bar`)
+  const editor = KullnaEditor.createEditor(editorElement, {
+    language: 'javascript',
+    highlight: hljs.highlightElement,
+    gutter: {class: 'gutter'}
+  });
+</script>
 ```
 
-#### `updateOptions(Partial<Options>)`
+> 💡 **Tip:** Check out the other options in the [Documentation](docs.md).
 
-Updates the options.
+## Styling
 
-```js
-jar.updateOptions({tab: '\t'})
+We recommend the use of the [Source Code Pro](https://fonts.google.com/specimen/Source+Code+Pro)
+font for the editor. You can include it in your page like this:
+
+```html
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap"
+/>
 ```
 
+We are also partial to Highlight.js's Solarized Dark theme for syntax highlighting. You can include
+it in your page like this:
 
-#### `onUpdate((code: string) => void)`
-
-Calls callback on code updates.
-
-```js
-jar.onUpdate(code => {
-  console.log(code)
-})
+```html
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/styles/base16/solarized-dark.min.css"
+/>
 ```
 
-#### `toString(): string`
+Finally, we like the following styles for a small embedded editor. This example gives you a good
+starting point for customizing the editor to your needs:
 
-Return current code.
+```html
+<style>
+  .editor {
+    border-radius: 6px;
+    font-family: 'Source Code Pro', monospace;
+    font-size: 14px;
+    font-weight: 400;
+    min-height: 240px;
+    line-height: 20px;
+  }
 
-```js
-let code = jar.toString()
+  .editor > div {
+    padding: 10px;
+  }
+
+  .gutter {
+    background-color: #002b36;
+    color: #839496;
+  }
+</style>
 ```
 
-#### `save(): string`
+---
 
-Saves current cursor position.
+_The Kullna Editor source, artifacts, and website content are **Copyright (c) 2023 The Kullna
+Programming Language Project.** They are free to use and open-source under the terms of the
+[GNU Lesser General Public License](https://www.gnu.org/licenses/lgpl-3.0)._
 
-```js
-let pos = jar.save()
-```
-
-#### `restore(pos: Position)`
-
-Restore cursor position.
-
-```js
-jar.restore(pos)
-```
-
-#### `recordHistory()`
-
-Saves current editor state to history.
-
-#### `destroy()`
-
-Removes event listeners from editor.
-
-## Related
-
-* [react-codejar](https://github.com/guilhermelimak/react-codejar) - a React wrapper for CodeJar. 
-* [ngx-codejar](https://github.com/julianpoemp/ngx-codejar) - an Angular wrapper for CodeJar. 
-
-## License
-
-[MIT](LICENSE)
+_Portions of this library are [Copyright (c) 2020 Anton Medvedev and others](NOTICE.md) and used
+under the terms of the MIT License_

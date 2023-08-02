@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>@kullna/editor Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/styles/base16/solarized-dark.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css"
+    />
+    <link rel="stylesheet" href="/assets/css/theme.css" />
+    <style>
+      :root {
+        --sd-base03: #002b36;
+        --sd-base02: #073642;
+        --sd-base01: #586e75;
+        --sd-base00: #657b83;
+        --sd-base0: #839496;
+        --sd-base1: #93a1a1;
+        --sd-base2: #eee8d5;
+        --sd-base3: #fdf6e3;
+        --sd-yellow: #b58900;
+        --sd-orange: #cb4b16;
+        --sd-red: #dc322f;
+        --sd-magenta: #d33682;
+        --sd-violet: #6c71c4;
+        --sd-blue: #268bd2;
+        --sd-cyan: #2aa198;
+        --sd-green: #859900;
+      }
+
+      @font-face {
+        font-family: 'KawkabMonoRegular';
+        src: url('./assets/fonts/KawkabMono-Regular.woff2') format('woff2'),
+          url('./assets/fonts/KawkabMono-Regular.woff') format('woff');
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        min-height: 100vh;
+      }
+
+      main {
+        margin: 40px auto;
+        padding: 20px;
+      }
+
+      .editor {
+        border-radius: 10px;
+        box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px,
+          rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+        font-family: 'KawkabMonoRegular', 'Source Code Pro', monospace;
+        font-size: 12px;
+        font-weight: 400;
+        min-height: 260px;
+        width: 700px;
+        letter-spacing: normal;
+        line-height: 20px;
+        tab-size: 4;
+        margin-top: 20px;
+        margin-left: 50%;
+        left: -350px;
+      }
+
+      .code-gutter {
+        background-color: var(--sd-base02);
+        color: var(--sd-base0);
+      }
+
+      .code-gutter-light {
+        background-color: var(--sd-base2);
+        color: var(--sd-base1);
+      }
+
+      .editor > div {
+        padding: 10px;
+      }
+
+      h2 {
+        margin-top: 50px;
+      }
+
+      #editor-prism {
+        background-color: var(--sd-base3);
+      }
+    </style>
+  </head>
+
+  <body>
+    <main class="container-lg px-3 my-5 markdown-body">
+      <h1 align="center">@kullna/editor Demos</h1>
+      <p align="center">
+        <a href="https://editor.kullna.org/"
+          ><img src="https://www.kullna.org/brand/logo.svg" width="150"
+        /></a>
+      </p>
+      <h1 align="center">@kullna/editor</h1>
+      <h3 align="center">A small but feature-rich code editor for the web</h3>
+      <p align="center"><a href="/">Home</a></p>
+      <hr />
+      <div id="demos"></div>
+      <hr />
+      <p>
+        <em
+          >The Kullna Editor source, artifacts, and website content are
+          <strong>Copyright (c) 2023 The Kullna Programming Language Project.</strong> They are free
+          to use and open-source under the terms of the
+          <a href="https://www.gnu.org/licenses/lgpl-3.0">GNU Lesser General Public License</a>.</em
+        >
+      </p>
+      <p>
+        <em
+          >Portions of this library are
+          <a href="/NOTICE.html">Copyright (c) 2020 Anton Medvedev and others</a> and used under the
+          terms of the MIT License.</em
+        >
+      </p>
+    </main>
+
+    <!-- For local development, comment this: -->
+    <script src="https://cdn.jsdelivr.net/npm/@kullna/editor/dist/kullna-editor.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+
+    <script type="module">
+      // For local development, uncomment this:
+      // import * as KullnaEditor from './dist/kullna-editor.esm.js';
+
+      function demoWithOptions(parentSelector, id, titleText, options, defaultValue) {
+        const parent = document.querySelector(parentSelector);
+        const title = document.createElement('h2');
+        title.innerText = titleText;
+        parent.appendChild(title);
+
+        const element = document.createElement('div');
+        element.className = 'editor';
+        element.id = 'editor-' + id;
+        parent.appendChild(element);
+
+        const editor = KullnaEditor.createEditor(element, options);
+
+        editor.updateCode(defaultValue);
+      }
+
+      document.onreadystatechange = () => {
+        if (document.readyState !== 'complete') {
+          return;
+        }
+
+        demoWithOptions(
+          '#demos',
+          'standard',
+          'Standard Configuration',
+          {
+            multilineIndentation: true,
+            tab: '\t',
+            language: 'html',
+            highlight: hljs.highlightElement,
+            gutter: {
+              width: '55px',
+              class: 'code-gutter'
+            }
+          },
+          `<div id="editor"><\/div>
+...
+<script>
+  const editorElement = document.querySelector('#editor')
+
+  const editor = KullnaEditor.createEditor(editorElement, {
+    language: 'javascript',
+    highlight: hljs.highlightElement,
+    gutter: {
+      backgroundColor: "var(--sd-base02)",
+      color: "var(--sd-base0)",
+    }
+  });
+<\/script>`
+        );
+
+        demoWithOptions(
+          '#demos',
+          'rtl',
+          'RTL Configuration',
+          {
+            multilineIndentation: true,
+            dir: 'rtl',
+            language: 'javascript',
+            highlight: hljs.highlightElement,
+            gutter: {
+              class: 'code-gutter'
+            }
+          },
+          `السلحفاة.ابدا()
+ارسم()
+السلحفاة.اقفز(س: ٠، ص: ٠، زاوية: ٠)
+ارسم(زاوية: ١٥، مسافة: ٢)
+السلحفاة.قف()
+المصحح.اعد()
+
+دالة ارسم(زاوية: ٢٠، مسافة: ٢)
+  لكل س من ٠ الى ٥٠
+    السلحفاة.اذهب(مسافة: مسافة + س)
+    السلحفاة.دوري(زاوية: زاوية)
+  تالي
+نهاية الدالة`
+        );
+
+        demoWithOptions(
+          '#demos',
+          'prism',
+          'Prism.js',
+          {
+            multilineIndentation: true,
+            language: 'javascript',
+            highlight: Prism.highlightElement,
+            gutter: {
+              class: 'code-gutter-light'
+            }
+          },
+          `Turtle.start()
+DrawSpiral()
+DrawSpiral(angle: 20, distance: 2)
+Turtle.end()
+Debugger.restart()
+
+function DrawSpiral(angle: 15, distance: 5)
+  for i from 0 to 50
+    Turtle.move(distance: distance + i)
+    Turtle.turn(angle: angle)
+  next
+end function`
+        );
+      };
+    </script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.1.0/anchor.min.js"
+      integrity="sha256-lZaRhKri35AyJSypXXs4o6OPFTbTmUoltBbDCbdzegg="
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      anchors.add();
+    </script>
+  </body>
+</html>
