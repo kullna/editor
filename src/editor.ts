@@ -332,6 +332,10 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
     onUpdate(toString());
   });
 
+  /**
+   * Obtains the current cursor position.
+   * @returns The current position.
+   */
   function save(): Position {
     const selection = getSelection();
     const pos: Position = {start: 0, end: 0, dir: undefined};
@@ -393,12 +397,18 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
         if (pos.dir !== '->') pos.start += el.nodeValue.length;
         if (pos.dir !== '<-') pos.end += el.nodeValue.length;
       }
+
+      return 'continue';
     });
 
     editor.normalize(); // collapse empty text nodes
     return pos;
   }
 
+  /**
+   * Restores the cursor to a previous position.
+   * @param pos The position to restore.
+   */
   function restore(pos: Position) {
     const selection = getSelection();
     let startNode: Node | undefined,
@@ -420,7 +430,7 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
     let current = 0;
 
     visit(editor, el => {
-      if (el.nodeType !== Node.TEXT_NODE) return;
+      if (el.nodeType !== Node.TEXT_NODE) return 'continue';
 
       const len = (el.nodeValue ?? '').length;
       if (current + len > pos.start) {
@@ -435,6 +445,8 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
         }
       }
       current += len;
+
+      return 'continue';
     });
 
     if (!startNode) {
@@ -452,28 +464,31 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
       [startNode, startOffset, endNode, endOffset] = [endNode, endOffset, startNode, startOffset];
     }
 
-    {
-      // If nodes not editable, create a text node.
-      const startEl = uneditable(startNode);
-      if (startEl) {
-        const node = document.createTextNode('');
-        startEl.parentNode?.insertBefore(node, startEl);
-        startNode = node;
-        startOffset = 0;
-      }
-      const endEl = uneditable(endNode);
-      if (endEl) {
-        const node = document.createTextNode('');
-        endEl.parentNode?.insertBefore(node, endEl);
-        endNode = node;
-        endOffset = 0;
-      }
+    // If nodes not editable, create a text node.
+    const startEl = uneditable(startNode);
+    if (startEl) {
+      const node = document.createTextNode('');
+      startEl.parentNode?.insertBefore(node, startEl);
+      startNode = node;
+      startOffset = 0;
+    }
+    const endEl = uneditable(endNode);
+    if (endEl) {
+      const node = document.createTextNode('');
+      endEl.parentNode?.insertBefore(node, endEl);
+      endNode = node;
+      endOffset = 0;
     }
 
     selection.setBaseAndExtent(startNode, startOffset, endNode, endOffset);
     editor.normalize(); // collapse empty text nodes
   }
 
+  /**
+   * Searches up the DOM tree for the first element that is not editable.
+   * @param node The node to start searching from.
+   * @returns The found element or undefined if none was found.
+   */
   function uneditable(node: Node): Element | undefined {
     let searchingNode: Node | null = node;
     while (searchingNode && searchingNode !== editor) {
@@ -487,18 +502,14 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
     }
   }
 
-  function beforeCursor() {
-    return Cursor.textBeforeCursor(editor);
-  }
-
-  function afterCursor() {
-    return Cursor.textAfterCursor(editor);
-  }
-
+  /**
+   * Handles "enter" key press.
+   * @param event The keydown event.
+   */
   function handleNewLine(event: KeyboardEvent) {
     if (event.key === 'Enter') {
-      const before = beforeCursor();
-      const after = afterCursor();
+      const before = Cursor.textBeforeCursor(editor);
+      const after = Cursor.textAfterCursor(editor);
 
       const [padding] = findPadding(before);
       let newLinePadding = padding;
@@ -532,7 +543,7 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
     if (isLegacy && event.key === 'Enter') {
       preventDefault(event);
       event.stopPropagation();
-      if (afterCursor() === '') {
+      if (Cursor.textAfterCursor(editor) === '') {
         insert('\n ');
         const pos = save();
         pos.start = --pos.end;
@@ -543,11 +554,15 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
     }
   }
 
+  /**
+   * Handles inserting closing characters if the user enters a starting character.
+   * @param event The keydown event.
+   */
   function handleSelfClosingCharacters(event: KeyboardEvent) {
     const open = `([{'"`;
     const close = `)]}'"`;
-    const codeAfter = afterCursor();
-    const codeBefore = beforeCursor();
+    const codeAfter = Cursor.textAfterCursor(editor);
+    const codeBefore = Cursor.textBeforeCursor(editor);
     const escapeCharacter = codeBefore.substr(codeBefore.length - 1) === '\\';
     const charAfter = codeAfter.substr(0, 1);
     if (close.includes(event.key) && !escapeCharacter && charAfter === event.key) {
@@ -592,6 +607,10 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
     }
   }
 
+  /**
+   * Handles inserting tab characters when the user presses the tab key.
+   * @param event The keydown event.
+   */
   function handleTabCharacters(event: KeyboardEvent) {
     if (event.key !== 'Tab') {
       return;
@@ -607,7 +626,7 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
     const selection = getSelection();
     if (!options.multilineIndentation || selection.getRangeAt(0).collapsed) {
       if (event.shiftKey) {
-        const before = beforeCursor();
+        const before = Cursor.textBeforeCursor(editor);
         const [padding, start] = findPadding(before);
         if (padding.length > 0) {
           const pos = save();
@@ -670,6 +689,10 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
     restore(inflateRange(initialSelection, insertedCharacters));
   }
 
+  /**
+   * Handles undo/redo.
+   * @param event The keydown event.
+   */
   function handleUndoRedo(event: KeyboardEvent) {
     if (isUndo(event)) {
       preventDefault(event);
@@ -693,6 +716,9 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
     }
   }
 
+  /**
+   * Records the current state of the editor in the undo/redo history.
+   */
   function recordHistory() {
     if (!focus) return;
 
@@ -720,6 +746,10 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
     }
   }
 
+  /**
+   * Handles pasting text into the editor.
+   * @param event The paste event.
+   */
   function handlePaste(event: ClipboardEvent) {
     if (event.defaultPrevented) return;
     preventDefault(event);
@@ -736,6 +766,10 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
     });
   }
 
+  /**
+   * Handles cutting text from the editor.
+   * @param event The cut event.
+   */
   function handleCut(event: ClipboardEvent) {
     const pos = save();
     const selection = getSelection();
@@ -752,7 +786,12 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
     preventDefault(event);
   }
 
-  function visit(editor: HTMLElement, visitor: (el: Node) => 'stop' | undefined) {
+  /**
+   * A generic tree traversal function.
+   * @param editor The element to begin traversing from.
+   * @param visitor A function that is called for each node in the tree.
+   */
+  function visit(editor: HTMLElement, visitor: (el: Node) => 'stop' | 'continue') {
     const queue: Node[] = [];
 
     if (editor.firstChild) queue.push(editor.firstChild);
@@ -769,28 +808,55 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
     }
   }
 
+  /**
+   * Returns true if the given event contains a ctrl key.
+   */
   function isCtrl(event: KeyboardEvent) {
-    return event.metaKey ?? event.ctrlKey;
+    return event.metaKey || event.ctrlKey;
   }
 
+  /**
+   * Returns true if the given event represents a standard undo keyboard sequence.
+   * @param event The keyboard event.
+   * @returns True if the event represents a standard undo keyboard sequence.
+   */
   function isUndo(event: KeyboardEvent) {
     return isCtrl(event) && !event.shiftKey && getKeyCode(event) === 'Z';
   }
 
+  /**
+   * Returns true if the given event represents a standard redo keyboard sequence.
+   * @param event The keyboard event.
+   * @returns True if the event represents a standard redo keyboard sequence.
+   */
   function isRedo(event: KeyboardEvent) {
     return isCtrl(event) && event.shiftKey && getKeyCode(event) === 'Z';
   }
 
+  /**
+   * Returns true if the given event represents a standard copy keyboard sequence.
+   * @param event The keyboard event.
+   * @returns True if the event represents a standard copy keyboard sequence.
+   */
   function isCopy(event: KeyboardEvent) {
     return isCtrl(event) && getKeyCode(event) === 'C';
   }
 
+  /**
+   * Obtains the key code from a keyboard event.
+   * @param event The keyboard event.
+   * @returns The key code.
+   */
   function getKeyCode(event: KeyboardEvent): string | undefined {
     const key = event.key ?? event.keyCode ?? event.which;
     if (!key) return undefined;
     return (typeof key === 'string' ? key : String.fromCharCode(key)).toUpperCase();
   }
 
+  /**
+   * Performs primitive HTML escaping and inserts the given text into the editor.
+   * @param text The text to sanitize and insert.
+   */
   function insert(text: string) {
     text = text
       .replace(/&/g, '&amp;')
@@ -822,15 +888,27 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
     return [text.substring(i, j) ?? '', i, j];
   }
 
+  /**
+   * Returns the text content of the editor.
+   * @returns The text content of the editor.
+   */
   function toString() {
     return editor.textContent ?? '';
   }
 
+  /**
+   * Prevents the default action of the given event.
+   * @param event The event.
+   */
   function preventDefault(event: Event) {
     event.preventDefault();
   }
 
-  function getSelection() {
+  /**
+   * Returns the current selection.
+   * @returns The current selection.
+   */
+  function getSelection(): Selection {
     return Cursor.getSelection(editor);
   }
 
