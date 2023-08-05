@@ -1,3 +1,6 @@
+---
+---
+
 <p align="center"><a href="https://editor.kullna.org/"><img src="https://www.kullna.org/brand/logo.svg" width="150"></a></p>
 <h1 align="center">@kullna/editor</h1>
 <h3 align="center">A small but feature-rich code editor for the web</h3>

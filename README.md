@@ -8,7 +8,7 @@
 <p align="center">
 <a href="https://cdn.jsdelivr.net/npm/@kullna/editor/dist/kullna-editor.min.js"><img src="https://img.shields.io/badge/CDN-JSDelivr-2aa198" alt="CDN"></a>
 <a href="https://www.npmjs.com/package/kullna/editor"><img src="https://img.shields.io/npm/v/@kullna/editor?color=dc322f" alt="npm"></a>
-<a href="https://bundlephobia.com/package/@kullna/editor"><img src="https://badgen.net/bundlephobia/minzip/@kullna/editor?label&color=dc322f" alt="npm bundle size"></a>
+<img src="https://deno.bundlejs.com/?q=@kullna/editor&badge=small" alt="npm bundle size">
 <a href="https://www.gnu.org/licenses/lgpl-3.0"><img src="https://img.shields.io/badge/License-LGPL_v3-blue.svg" alt="License: LGPL v3"></a>
 <a href="https://github.com/kullna/editor"><img src="https://img.shields.io/badge/Source-GitHub-268bd2" alt="Source on GitHub"></a>
 <a href="https://discord.kullna.org/"><img src="https://img.shields.io/badge/Chat-Discord-6c71c4" alt="Chat on Discord"></a>
@@ -75,7 +75,7 @@ Read the [Contributing](CONTRIBUTING.md) Page for more information.
 # Features
 
 - **Lightweight**
-  - **~10 KB** minified UMD
+  - **~4 KB** minified and gzipped
   - No dependencies
 - **Undo & Redo**
 - **Smart Quotes**

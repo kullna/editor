@@ -14,77 +14,120 @@ GNU General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
-interface Position {
+/**
+ * The Position interface represents the position of the cursor on the page.
+ */
+export interface Position {
   top: string;
   left: string;
 }
 
 /**
- * The Cursor class provides methods to get information about the current
+ * Gets the current selection from the window, asserting that it exists.
+ * @param element The element to get the selection for.
+ * @returns The current selection.
+ * @remarks There are limited cases where the selection may not exist, such as
+ * when the user is not focused on the editor. In these cases, an error is
+ * thrown. This function should only be used when the selection is guaranteed
+ * to exist.
+ */
+function getSelection(element: HTMLElement) {
+  if (!element.parentNode) {
+    throw new Error('editor.parentNode is unexpectedly null');
+  }
+  if (element.parentNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+    const result = (element.parentNode as Document).getSelection();
+    if (result) {
+      return result;
+    }
+  }
+  const result = window.getSelection();
+  if (result) {
+    return result;
+  }
+  throw new Error('window.getSelection() unexpectedly returned null');
+}
+
+/**
+ * Returns position of cursor on the page.
+ * @param element DOM node.
+ * @param toStart Position of beginning of selection or end of selection.
+ */
+function cursorPosition(element: HTMLElement, toStart?: boolean): Position | undefined {
+  const selection = getSelection(element);
+  if (selection.rangeCount > 0) {
+    const cursor = document.createElement('span');
+    cursor.textContent = '|';
+
+    const range = selection.getRangeAt(0).cloneRange();
+    range.collapse(toStart);
+    range.insertNode(cursor);
+
+    const {x, y, height} = cursor.getBoundingClientRect();
+    const top = `${window.scrollY + y + height}px`;
+    const left = `${window.scrollX + x}px`;
+
+    if (cursor.parentNode) {
+      cursor.parentNode.removeChild(cursor);
+    }
+
+    return {top, left};
+  }
+  return undefined;
+}
+
+/**
+ * Returns selected text.
+ * @param element DOM node.
+ * @returns Selected text.
+ */
+function selectedText(element: HTMLElement) {
+  const selection = getSelection(element);
+  if (selection.rangeCount === 0) return '';
+  return selection.getRangeAt(0).toString();
+}
+
+/**
+ * Returns text before the cursor.
+ * @param element DOM node.
+ * @returns Text before the cursor.
+ */
+function textBeforeCursor(element: HTMLElement) {
+  const selection = getSelection(element);
+  if (selection.rangeCount === 0) return '';
+
+  const originalRange = selection.getRangeAt(0);
+  const newRange = document.createRange();
+  newRange.selectNodeContents(element);
+  newRange.setEnd(originalRange.startContainer, originalRange.startOffset);
+  return newRange.toString();
+}
+
+/**
+ * Returns text after the cursor.
+ * @param element Editor DOM node.
+ * @returns Text after the cursor.
+ */
+function textAfterCursor(element: HTMLElement) {
+  const selection = getSelection(element);
+  if (selection.rangeCount === 0) return '';
+
+  const originalRange = selection.getRangeAt(0);
+  const newRange = document.createRange();
+  newRange.selectNodeContents(element);
+  newRange.setStart(originalRange.endContainer, originalRange.endOffset);
+  return newRange.toString();
+}
+
+/**
+ * The Cursor object provides methods to get information about the current
  * selection or cursor position in the editor.
  * @remarks This class is currently unused internally.
  */
-export class Cursor {
-  /**
-   * Returns position of cursor on the page.
-   * @param toStart Position of beginning of selection or end of selection.
-   */
-  static cursorPosition(toStart?: boolean): Position | undefined {
-    const s = window.getSelection()!;
-    if (s.rangeCount > 0) {
-      const cursor = document.createElement('span');
-      cursor.textContent = '|';
-
-      const r = s.getRangeAt(0).cloneRange();
-      r.collapse(toStart);
-      r.insertNode(cursor);
-
-      const {x, y, height} = cursor.getBoundingClientRect();
-      const top = window.scrollY + y + height + 'px';
-      const left = window.scrollX + x + 'px';
-      cursor.parentNode!.removeChild(cursor);
-
-      return {top, left};
-    }
-    return undefined;
-  }
-
-  /**
-   * Returns selected text.
-   */
-  static selectedText() {
-    const s = window.getSelection()!;
-    if (s.rangeCount === 0) return '';
-    return s.getRangeAt(0).toString();
-  }
-
-  /**
-   * Returns text before the cursor.
-   * @param editor Editor DOM node.
-   */
-  static textBeforeCursor(editor: Node) {
-    const s = window.getSelection()!;
-    if (s.rangeCount === 0) return '';
-
-    const r0 = s.getRangeAt(0);
-    const r = document.createRange();
-    r.selectNodeContents(editor);
-    r.setEnd(r0.startContainer, r0.startOffset);
-    return r.toString();
-  }
-
-  /**
-   * Returns text after the cursor.
-   * @param editor Editor DOM node.
-   */
-  static textAfterCursor(editor: Node) {
-    const s = window.getSelection()!;
-    if (s.rangeCount === 0) return '';
-
-    const r0 = s.getRangeAt(0);
-    const r = document.createRange();
-    r.selectNodeContents(editor);
-    r.setStart(r0.endContainer, r0.endOffset);
-    return r.toString();
-  }
-}
+export const Cursor = {
+  getSelection,
+  cursorPosition,
+  selectedText,
+  textBeforeCursor,
+  textAfterCursor
+};

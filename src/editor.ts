@@ -14,7 +14,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
+// skipcq: JS-C1003: Wildcard Imports
 import * as Gutter from './gutter';
+import {Cursor} from './cursor';
 
 /**
  * The `EditorOptions` interface specifies the options that can be
@@ -102,7 +104,10 @@ export interface EditorOptions {
    * and can be used to highlight the code.
    */
   highlight?: (e: HTMLElement) => void;
-
+  /**
+   * The `dir` option specifies the direction of prevailing script
+   * used in the editor.
+   */
   dir: 'ltr' | 'rtl';
 }
 
@@ -130,15 +135,30 @@ interface Position {
  */
 export interface Editor {
   /**
-   *
+   * Updates the text content of the editor.
+   * @param code The new text content.
    */
-  updateOptions(newOptions: Partial<EditorOptions>): void;
   updateCode(code: string): void;
+  /**
+   * Attaches a callback that is called when the editor is updated.
+   */
   onUpdate(callback: (code: string) => void): void;
+  /**
+   * Returns the text content of the editor.
+   */
   toString(): string;
+  /**
+   * ٍٍReleases all resources used by the editor.
+   */
   destroy(): void;
 }
 
+/**
+ * Creates a new editor instance.
+ * @param parent The parent element to which the editor will be appended.
+ * @param opt Options for the editor.
+ * @returns A new editor instance.
+ */
 export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = {}): Editor {
   const options: EditorOptions = {
     tab: '  ',
@@ -151,7 +171,7 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
     preserveIdent: true,
     addClosing: true,
     history: true,
-    window: window,
+    window,
     dir: 'ltr',
     contentClass: 'kullna-editor-content',
     gutter: {},
@@ -189,7 +209,7 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
   parent.appendChild(gutter.element);
   editor.addEventListener('scroll', () => (gutter.element.style.top = `-${editor.scrollTop}px`));
 
-  if (gutter.options.dir == 'ltr') {
+  if (gutter.options.dir === 'ltr') {
     editor.style.left = `${gutter.options.width}`;
   } else {
     editor.style.right = `${gutter.options.width}`;
@@ -200,11 +220,13 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
   const history: HistoryRecord[] = [];
   let at = -1;
   let focus = false;
-  let onUpdate: (code: string) => void | undefined = () => void 0;
+  let onUpdate: (code: string) => void = () => {
+    return;
+  };
   let prev: string; // code content prior keydown event
 
   const updateLineCount = () => {
-    const code = editor.textContent || '';
+    const code = editor.textContent ?? '';
     const linesCount = code.replace(/\n+$/, '\n').split('\n').length + 1;
     gutter.setNumberOfLines(linesCount);
   };
@@ -212,7 +234,7 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const doHighlight = (editor: HTMLElement, pos?: Position) => {
     if (options.highlight) {
-      const code = editor.textContent || '';
+      const code = editor.textContent ?? '';
       editor.textContent = code;
       options.highlight(editor);
     }
@@ -311,11 +333,13 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
   });
 
   function save(): Position {
-    const s = getSelection();
+    const selection = getSelection();
     const pos: Position = {start: 0, end: 0, dir: undefined};
 
-    let {anchorNode, anchorOffset, focusNode, focusOffset} = s;
-    if (!anchorNode || !focusNode) throw 'error1';
+    let {anchorNode, anchorOffset, focusNode, focusOffset} = selection;
+    if (!anchorNode || !focusNode) {
+      throw new Error('AnchorNode or FocusNode not found when saving selection.');
+    }
 
     // If the anchor and focus are the editor element, return either a full
     // highlight or a start/end cursor position depending on the selection
@@ -365,9 +389,9 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
         }
       }
 
-      if (el.nodeType === Node.TEXT_NODE) {
-        if (pos.dir != '->') pos.start += el.nodeValue!.length;
-        if (pos.dir != '<-') pos.end += el.nodeValue!.length;
+      if (el.nodeValue && el.nodeType === Node.TEXT_NODE) {
+        if (pos.dir !== '->') pos.start += el.nodeValue.length;
+        if (pos.dir !== '<-') pos.end += el.nodeValue.length;
       }
     });
 
@@ -376,7 +400,7 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
   }
 
   function restore(pos: Position) {
-    const s = getSelection();
+    const selection = getSelection();
     let startNode: Node | undefined,
       startOffset = 0;
     let endNode: Node | undefined,
@@ -387,7 +411,7 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
     if (pos.end < 0) pos.end = 0;
 
     // Flip start and end if the direction reversed
-    if (pos.dir == '<-') {
+    if (pos.dir === '<-') {
       const {start, end} = pos;
       pos.start = end;
       pos.end = start;
@@ -398,7 +422,7 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
     visit(editor, el => {
       if (el.nodeType !== Node.TEXT_NODE) return;
 
-      const len = (el.nodeValue || '').length;
+      const len = (el.nodeValue ?? '').length;
       if (current + len > pos.start) {
         if (!startNode) {
           startNode = el;
@@ -413,11 +437,18 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
       current += len;
     });
 
-    if (!startNode) (startNode = editor), (startOffset = editor.childNodes.length);
-    if (!endNode) (endNode = editor), (endOffset = editor.childNodes.length);
+    if (!startNode) {
+      startNode = editor;
+      startOffset = editor.childNodes.length;
+    }
+
+    if (!endNode) {
+      endNode = editor;
+      endOffset = editor.childNodes.length;
+    }
 
     // Flip back the selection
-    if (pos.dir == '<-') {
+    if (pos.dir === '<-') {
       [startNode, startOffset, endNode, endOffset] = [endNode, endOffset, startNode, startOffset];
     }
 
@@ -439,38 +470,29 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
       }
     }
 
-    s.setBaseAndExtent(startNode, startOffset, endNode, endOffset);
+    selection.setBaseAndExtent(startNode, startOffset, endNode, endOffset);
     editor.normalize(); // collapse empty text nodes
   }
 
   function uneditable(node: Node): Element | undefined {
-    while (node && node !== editor) {
-      if (node.nodeType === Node.ELEMENT_NODE) {
-        const el = node as Element;
-        if (el.getAttribute('contenteditable') == 'false') {
+    let searchingNode: Node | null = node;
+    while (searchingNode && searchingNode !== editor) {
+      if (searchingNode.nodeType === Node.ELEMENT_NODE) {
+        const el = searchingNode as Element;
+        if (el.getAttribute('contenteditable') === 'false') {
           return el;
         }
       }
-      node = node.parentNode!;
+      searchingNode = searchingNode.parentNode;
     }
   }
 
   function beforeCursor() {
-    const s = getSelection();
-    const r0 = s.getRangeAt(0);
-    const r = document.createRange();
-    r.selectNodeContents(editor);
-    r.setEnd(r0.startContainer, r0.startOffset);
-    return r.toString();
+    return Cursor.textBeforeCursor(editor);
   }
 
   function afterCursor() {
-    const s = getSelection();
-    const r0 = s.getRangeAt(0);
-    const r = document.createRange();
-    r.selectNodeContents(editor);
-    r.setStart(r0.endContainer, r0.endOffset);
-    return r.toString();
+    return Cursor.textAfterCursor(editor);
   }
 
   function handleNewLine(event: KeyboardEvent) {
@@ -490,7 +512,7 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
       if (newLinePadding.length > 0) {
         preventDefault(event);
         event.stopPropagation();
-        insert('\n' + newLinePadding);
+        insert(`\n${newLinePadding}`);
       } else {
         legacyNewLineFix(event);
       }
@@ -498,7 +520,7 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
       // Place adjacent "}" on next line
       if (newLinePadding !== padding && options.moveToNewLine.test(after)) {
         const pos = save();
-        insert('\n' + padding);
+        insert(`\n${padding}`);
         restore(pos);
       }
     }
@@ -510,7 +532,7 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
     if (isLegacy && event.key === 'Enter') {
       preventDefault(event);
       event.stopPropagation();
-      if (afterCursor() == '') {
+      if (afterCursor() === '') {
         insert('\n ');
         const pos = save();
         pos.start = --pos.end;
@@ -538,11 +560,11 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
     } else if (
       open.includes(event.key) &&
       !escapeCharacter &&
-      (`"'`.includes(event.key) || ['', ' ', '\n'].includes(charAfter))
+      (`"'`.includes(event.key) ?? ['', ' ', '\n'].includes(charAfter))
     ) {
       preventDefault(event);
       const pos = save();
-      const wrapText = pos.start == pos.end ? '' : getSelection().toString();
+      const wrapText = pos.start === pos.end ? '' : getSelection().toString();
       const text = event.key + wrapText + close[open.indexOf(event.key)];
       insert(text);
       pos.start++;
@@ -625,7 +647,7 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
         // We can only dedent lines that begin with some sort of whitespace.
         // So we check for that first, and never consume more characters than
         // there is whitespace.
-        const match = selectedLines[i].match(/^\s+/);
+        const match = /^\s+/.exec(selectedLines[i]);
         if (match !== null) {
           const leadingSpace = match[0];
           const originalLength = selectedLines[i].length;
@@ -748,7 +770,7 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
   }
 
   function isCtrl(event: KeyboardEvent) {
-    return event.metaKey || event.ctrlKey;
+    return event.metaKey ?? event.ctrlKey;
   }
 
   function isUndo(event: KeyboardEvent) {
@@ -764,7 +786,7 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
   }
 
   function getKeyCode(event: KeyboardEvent): string | undefined {
-    const key = event.key || event.keyCode || event.which;
+    const key = event.key ?? event.keyCode ?? event.which;
     if (!key) return undefined;
     return (typeof key === 'string' ? key : String.fromCharCode(key)).toUpperCase();
   }
@@ -797,11 +819,11 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
     // Find padding of the line.
     let j = i;
     while (j < text.length && /[ \t]/.test(text[j])) j++;
-    return [text.substring(i, j) || '', i, j];
+    return [text.substring(i, j) ?? '', i, j];
   }
 
   function toString() {
-    return editor.textContent || '';
+    return editor.textContent ?? '';
   }
 
   function preventDefault(event: Event) {
@@ -809,16 +831,10 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
   }
 
   function getSelection() {
-    if (editor.parentNode?.nodeType == Node.DOCUMENT_FRAGMENT_NODE) {
-      return (editor.parentNode as Document).getSelection()!;
-    }
-    return wnd.getSelection()!;
+    return Cursor.getSelection(editor);
   }
 
   return {
-    updateOptions(newOptions: Partial<EditorOptions>) {
-      Object.assign(options, newOptions);
-    },
     updateCode(code: string) {
       editor.textContent = code;
       doHighlight(editor);

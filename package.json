@@ -100,9 +100,6 @@
     ],
     "**/*.md": [
       "prettier --write"
-    ],
-    "**/*.html": [
-      "prettier --write"
     ]
   },
   "husky": {

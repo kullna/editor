@@ -2,6 +2,7 @@
   "recommendations": [
     "orta.vscode-jest",
     "esbenp.prettier-vscode",
-    "vivaxy.vscode-conventional-commits"
+    "vivaxy.vscode-conventional-commits",
+    "deepsourcecorp.deepsource-vscode"
   ]
 }
