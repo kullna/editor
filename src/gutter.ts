@@ -118,11 +118,11 @@ export function createGutter(options?: Partial<GutterOptions>): Gutter {
   };
   const element = createGutterElement(opts);
   return {
-    element: element,
+    element,
     options: opts,
     setNumberOfLines: (count: number) => setNumberOfLines(element, count, opts.customizer),
     updateLineNumber: (lineNumber: number) => {
-      if (opts.customizer == undefined) {
+      if (opts.customizer === undefined) {
         return;
       }
       updateLineNumber(element, lineNumber, opts.customizer);
@@ -143,7 +143,7 @@ function createGutterElement(opts: GutterOptions): HTMLElement {
   gutter.style.position = 'absolute';
   gutter.style.top = '0px';
   gutter.style.bottom = '0px';
-  if (opts.dir == 'ltr') {
+  if (opts.dir === 'ltr') {
     gutter.style.left = '0px';
     gutter.style.textAlign = 'right';
   } else {
@@ -171,9 +171,9 @@ function createGutterLineElement(): GutterLineElement {
   gutterLineWrapper.appendChild(accessorySpan);
 
   const element: GutterLineElement = {
-    gutterLineWrapper: gutterLineWrapper,
-    lineNumberSpan: lineNumberSpan,
-    accessorySpan: accessorySpan
+    gutterLineWrapper,
+    lineNumberSpan,
+    accessorySpan
   };
 
   (gutterLineWrapper as GutterAnnotatedHTMLElement).gutterLineElement = element;
