@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "inlineSourceMap": true,
     "target": "ES2021",
     "lib": ["ES2021", "DOM"],
     "moduleResolution": "node",
@@ -8,5 +9,5 @@
     "noUnusedLocals": true,
     "outDir": "./dist"
   },
-  "include": ["src/*.ts", "src/editor.ts"]
+  "include": ["src/**/*.ts"]
 }

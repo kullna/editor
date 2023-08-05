@@ -1,0 +1,17 @@
+name: Update Dev Branch Wiki
+
+on:
+  push:
+    paths:
+      - 'wiki/**'
+    branches:
+      - main
+jobs:
+  update-wiki:
+    runs-on: ubuntu-latest
+    name: Update Dev Branch Wiki
+    steps:
+      - uses: OrlovM/Wiki-Action@v1
+        with:
+          path: 'docs'
+          token: ${{ secrets.GITHUB_TOKEN }}

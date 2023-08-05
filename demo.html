@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -39,7 +39,8 @@
 
       @font-face {
         font-family: 'KawkabMonoRegular';
-        src: url('./assets/fonts/KawkabMono-Regular.woff2') format('woff2'),
+        src:
+          url('./assets/fonts/KawkabMono-Regular.woff2') format('woff2'),
           url('./assets/fonts/KawkabMono-Regular.woff') format('woff');
         font-weight: normal;
         font-style: normal;
@@ -62,8 +63,11 @@
       }
 
       .editor {
+        background-color: var(--sd-base02);
         border-radius: 10px;
-        box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px,
+        box-shadow:
+          rgba(0, 0, 0, 0.4) 0px 2px 4px,
+          rgba(0, 0, 0, 0.3) 0px 7px 13px -3px,
           rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
         font-family: 'KawkabMonoRegular', 'Source Code Pro', monospace;
         font-size: 12px;
@@ -78,9 +82,30 @@
         left: -350px;
       }
 
+      .breakpoint {
+        background-color: var(--sd-red);
+        position: absolute;
+        border-radius: 50%;
+        width: 0.8em;
+        height: 0.8em;
+        display: inline-flex;
+        margin-left: -38px;
+        margin-top: 5px;
+      }
+
+      .code-gutter-highlight {
+        background-color: #ffffff22;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 8px;
+        bottom: 9px;
+      }
+
       .code-gutter {
-        background-color: var(--sd-base02);
+        background-color: var(--sd-base03);
         color: var(--sd-base0);
+        border-color: var(--sd-base00);
       }
 
       .code-gutter-light {
@@ -115,32 +140,29 @@
       <p align="center"><a href="/">Home</a></p>
       <hr />
       <div id="demos"></div>
-      <hr />
+      <p><br /></p>
       <p>
         <em
           >The Kullna Editor source, artifacts, and website content are
-          <strong>Copyright (c) 2023 The Kullna Programming Language Project.</strong> They are free
-          to use and open-source under the terms of the
+          <strong
+            >Copyright (c) 2023
+            <a href="https://www.kullna.org/">The Kullna Programming Language Project</a>.</strong
+          >
+          <br />
+          They are free to use and open-source under the terms of the
           <a href="https://www.gnu.org/licenses/lgpl-3.0">GNU Lesser General Public License</a>.</em
-        >
-      </p>
-      <p>
-        <em
-          >Portions of this library are
-          <a href="/NOTICE.html">Copyright (c) 2020 Anton Medvedev and others</a> and used under the
-          terms of the MIT License.</em
         >
       </p>
     </main>
 
-    <!-- For local development, comment this: -->
-    <script src="https://cdn.jsdelivr.net/npm/@kullna/editor/dist/kullna-editor.min.js"></script>
+    <!-- For local testing, comment this: -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@kullna/editor/dist/kullna-editor.min.js"></script> -->
     <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/highlight.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
 
     <script type="module">
-      // For local development, uncomment this:
-      // import * as KullnaEditor from './dist/kullna-editor.esm.js';
+      // For local testing, uncomment this:
+      import * as KullnaEditor from './dist/kullna-editor.esm.js';
 
       function demoWithOptions(parentSelector, id, titleText, options, defaultValue) {
         const parent = document.querySelector(parentSelector);
@@ -154,8 +176,10 @@
         parent.appendChild(element);
 
         const editor = KullnaEditor.createEditor(element, options);
-
-        editor.updateCode(defaultValue);
+        editor.onSelectionFocusChanged(document => {
+          editor.highlightedLine = document.currentLineNumber;
+        });
+        editor.code = defaultValue;
       }
 
       document.onreadystatechange = () => {
@@ -168,13 +192,23 @@
           'standard',
           'Standard Configuration',
           {
-            multilineIndentation: true,
-            tab: '\t',
             language: 'html',
-            highlight: hljs.highlightElement,
+            highlightElement: e => {
+              hljs.highlightElement(e);
+              e.style.backgroundColor = 'transparent';
+            },
             gutter: {
+              border: true,
               width: '55px',
-              class: 'code-gutter'
+              class: 'code-gutter',
+              renderGutterLine: (lineNumber, gutterLineElement) => {
+                gutterLineElement.accessorySpan.innerHtml = '';
+                if (lineNumber === 5) {
+                  const breakpoint = document.createElement('div');
+                  breakpoint.classList.add('breakpoint');
+                  gutterLineElement.accessorySpan.appendChild(breakpoint);
+                }
+              }
             }
           },
           `<div id="editor"><\/div>
@@ -198,11 +232,15 @@
           'rtl',
           'RTL Configuration',
           {
-            multilineIndentation: true,
             dir: 'rtl',
             language: 'javascript',
-            highlight: hljs.highlightElement,
+            highlightElement: e => {
+              hljs.highlightElement(e);
+              e.style.backgroundColor = 'transparent';
+            },
             gutter: {
+              border: true,
+              width: '55px',
               class: 'code-gutter'
             }
           },
@@ -226,9 +264,8 @@
           'prism',
           'Prism.js',
           {
-            multilineIndentation: true,
-            language: 'javascript',
-            highlight: Prism.highlightElement,
+            language: 'js',
+            highlightElement: Prism.highlightElement,
             gutter: {
               class: 'code-gutter-light'
             }

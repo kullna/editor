@@ -1,208 +1,92 @@
 <p align="center"><a href="https://editor.kullna.org/"><img src="https://www.kullna.org/brand/logo.svg" width="150"></a></p>
 <h1 align="center">@kullna/editor</h1>
 <h3 align="center">A small but feature-rich code editor for the web</h3>
-
-<p align="center"><img src="assets/images/screenshot.png" width="718" alt="screenshot"></p>
-<p align="center"><a href="https://editor.kullna.org/demo.html">Try the Demos</a> - <a href="https://editor.kullna.org/docs.html">Read the Docs</a> - <a href="https://editor.kullna.org/CONTRIBUTING.html">Contribute</a></p>
-
+<p align="center"><img src="https://editor.kullna.org/assets/images/screenshot.png" width="724" alt="screenshot"></p>
 <p align="center">
-<a href="https://cdn.jsdelivr.net/npm/@kullna/editor/dist/kullna-editor.min.js"><img src="https://img.shields.io/badge/CDN-JSDelivr-2aa198" alt="CDN"></a>
-<a href="https://www.npmjs.com/package/kullna/editor"><img src="https://img.shields.io/npm/v/@kullna/editor?color=dc322f" alt="npm"></a>
-<img src="https://deno.bundlejs.com/?q=@kullna/editor&badge=small" alt="npm bundle size">
-<a href="https://www.gnu.org/licenses/lgpl-3.0"><img src="https://img.shields.io/badge/License-LGPL_v3-blue.svg" alt="License: LGPL v3"></a>
-<a href="https://github.com/kullna/editor"><img src="https://img.shields.io/badge/Source-GitHub-268bd2" alt="Source on GitHub"></a>
-<a href="https://discord.kullna.org/"><img src="https://img.shields.io/badge/Chat-Discord-6c71c4" alt="Chat on Discord"></a>
+    <a href="https://editor.kullna.org/demo.html">🔍 Demos</a> •
+    <a href="https://editor.kullna.org/modules.html">📖 Docs</a> •
+    <a href="https://editor.kullna.org/CONTRIBUTING.html">🙌 Contribute</a>
 </p>
+<p align="center">
+    <a href="https://cdn.jsdelivr.net/npm/@kullna/editor/dist/kullna-editor.min.js">
+        <img src="https://img.shields.io/badge/CDN-JSDelivr-2aa198" alt="CDN">
+    </a>
+    <a href="https://www.npmjs.com/package/kullna/editor">
+        <img src="https://img.shields.io/npm/v/@kullna/editor?color=dc322f" alt="npm">
+    </a>
+    <img src="https://deno.bundlejs.com/?q=@kullna/editor&badge=small" alt="npm bundle size">
+    <a href="https://www.gnu.org/licenses/lgpl-3.0">
+        <img src="https://img.shields.io/badge/License-LGPL_v3-b58900.svg" alt="License: LGPL v3">
+    </a>
+    <a href="https://github.com/kullna/editor">
+        <img src="https://img.shields.io/badge/Source-GitHub-d33682" alt="Source on GitHub">
+    </a>
+    <a href="https://www.codefactor.io/repository/github/kullna/editor">
+        <img src="https://www.codefactor.io/repository/github/kullna/editor/badge" alt="CodeFactor">
+    </a>
+    <a href="https://discord.kullna.org/">
+        <img src="https://img.shields.io/badge/Join-Discord-6c71c4" alt="Join us on Discord">
+    </a>
+</p>
+<p><br/></p>
 
-# About
+`@kullna/editor` is a web code editor developed by
+[The Kullna Programming Language Project](http://www.kullna.org/); a platform dedicated to teaching
+children programming in their own language.
 
-`@kullna/editor` is a small but feature-rich code editor for the web maintained by
-[The Kullna Programming Language Project](https://www.kullna.org); a web-based platform for teaching
-programming to children in their native language.
+As we worked on the Kullna IDE, we needed a reliable code editor with features like syntax
+highlighting, efficient indentation management, line highlighting, and a customizable gutter for
+adding breakpoints and bookmarks. An essential requirement was support for Right-to-Left (RTL)
+languages.
 
-In building Kullna, we needed a robust code editor that supports syntax highlighting, maintaining
-and managing code-style indentation, line highlighting, a customizable gutter for setting
-breakpoints and bookmarks, and sufficient flexibility to support auto-complete and inline-help. It
-also had to support RTL.
+Our research showed a gap in the market: many available editors were either too complex to be easily
+customized to our needs, or didn't offer the robustness we needed. Notably, none provided RTL
+support.
 
-In surveying the landscape of code editors, we found that most of the popular editors (such as
-[CodeMirror](https://codemirror.net/), [Ace](https://ace.c9.io/), and
-[Monaco](https://microsoft.github.io/monaco-editor/)) are large and complex, and that most of the
-lightweight editors ([CodeJar](https://medv.io/codejar/)) are not robust enough to support our
-needs.
+To address this, we introduced `@kullna/editor`. It's a simple yet versatile code editor, designed
+with extensibility in mind and built-in RTL support. Crafted in TypeScript, this lightweight,
+dependency-free editor is not only suitable for basic code editing tasks but also capable of
+supporting more advanced features like auto-complete and inline help.
 
-CodeMirror had tentative RTL support in the past, but that support was explicitly dropped in version
-6.0 - a fact that highlighted for us the risk of relying on a large and complex library we couldn't
-easily contribute to or maintain ourselves if we needed to. Since this is a core component of our
-platform, we could not afford to rely on a library that might drop support for mission-critical
-features we rely on, or that we could not easily contribute to or maintain ourselves.
+## Features
 
-In looking at the lightweight editors, we found that CodeJar is a very nice, small and simple
-editor, but that it is not designed to be a full-featured code editor. It is designed to be a
-minimalist editor for very light editing or display. It does not support gutters (for things like
-breakpoints and bookmarks) or line highlighting, and has performance issues with mid to large size
-files - which make it unsuitable for our use case.
+- 🎨 **Syntax Highlighting**: Integrate with Highlight.JS, Prism, or design your custom solution.
+- ⏪ **Undo/Redo**: Offers customizable undo/redo levels.
+- ✂️ **Copy-Paste**: Ensure consistent cross-browser cut, copy, and paste operations in an
+  XSS-secure way.
+- 🖊️ **Bracket Management**: Automatic close-bracket and close-quote insertion, with type-over
+  capability.
+- ➡️ **Code Indentation**: Flexible code indentation using tab or shift-tab. Supports multi-line
+  selections.
+- 🧐 **Active Line Highlighting**: Spotlight the active line or indicate the debugger's current
+  execution point.
+- 🔧 **Customizable Gutter**: Define your gutter contents like breakpoint or bookmark labels while
+  benefiting from our rendering strategies.
+- 🖱️ **Input Processors**: Intuitive APIs designed to allow you to extend the input processing logic
+  to meet your needs.
+- 🌍 **Full RTL Support**: Dedicated support for right-to-left languages.
 
-For all these reasons, we decided we had no choice but to build our own editor. Fortunately, CodeJar
-provided a good starting point for us, and we were able to build on top of it quickly and add the
-features we needed.
+## Why @kullna/editor?
 
-In deciding to build our own editor, we realized that there are likely others who have similar
-needs, and they might be able to contribute feedback, ideas, and code back if we made it available
-as a supported, standalone library.
+- 🎯 **Just Right**: Striking a balance between simplicity and flexibility.
+- 🌐 **Modern APIs**: No more browser compatibility headaches.
+- 📚 **Flexibility**: Integrate auto-complete, inline help, or other custom input event logic.
+- 🚀 **Active Maintenance**: Continuously developed for the Kullna IDE.
+- 💪 **RTL & I18N**: Comprehensive support without compromise.
+- 👥 **Join Us**: We're open to contributions!
 
-So, if you're like us and you need a code editor that is small and simple, yet has sufficient
-features to support a robust code editing experience, and is actively maintained, then this library
-may be for you. Here's a few reasons why we think you might want to consider using it and
-contributing to it:
+## Contribute
 
-- **Not too small and simple** - it has all the features you need to support a robust code editing
-  experience.
-- **Not too big and complex** - you can easily modify it to suit your needs if necessary.
-- **Just right** - it's small and simple enough to be easy to understand and modify, yet robust
-  enough to support a full-featured code editing experience.
-- **Dedicated maintainer** - It's used in the [Kullna IDE](https://ide.kullna.org/), so it will
-  continue to be maintained and improved as we build out the IDE and get feedback from Kullna users.
-- **Comitted to RTL and I18N** - We are committed to maintaining RTL support in this library, and
-  will not drop it in future versions. To our knowledge, this is the only code editor with explicit
-  support for RTL. If you need RTL support, this is the library for you.
+We envision a community-driven evolution for `@kullna/editor`. Your feedback, ideas, and
+contributions can shape the future of this editor, making it even more versatile and user-friendly.
+If our vision resonates with yours, consider contributing.
 
-Please join us by contributing to this library. We welcome your feedback, ideas, and code
-contributions.
-
-Read the [Contributing](CONTRIBUTING.md) Page for more information.
-
-# Features
-
-- **Lightweight**
-  - **~4 KB** minified and gzipped
-  - No dependencies
-- **Undo & Redo**
-- **Smart Quotes**
-  - Can automatically insert closing brackets & quotes
-- **Full Indentation Support**
-  - Preserve indentation on new line
-  - Auto-increment or decrement indentation level
-  - Customizable indentation representation (spaces or `\t`)
-  - Multi-line indentation level change support
-- **Robust Optional Gutter**
-  - On the left or the right (to support RTL)
-  - Line numbers
-  - Icons (like breakpoints or bookmarks)
-  - Flexible styling
-- **First-Class Support for RTL**
-- **Easy to Use**
-  - Available as a UMD module
-  - Built in, and supports, TypeScript clients
-  - Integrate via CDN or NPM
-
-# Quick Start
-
-## via CDN with Highlight.js
-
-```html
-<script src="https://cdn.jsdelivr.net/npm/@kullna/editor/dist/kullna-editor.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/highlight.min.js"></script>
-```
-
-```html
-<div id="editor"></div>
-```
-
-```html
-<script>
-  const editorElement = document.querySelector('#editor');
-
-  const editor = KullnaEditor.createEditor(editorElement, {
-    language: 'javascript',
-    highlight: hljs.highlightElement,
-    gutter: {class: 'gutter'}
-  });
-</script>
-```
-
-> 💡 **Tip:** Check out the other options in the [Documentation](docs.md).
-
-## via NPM with Highlight.js
-
-```bash
-npm i @kullna/editor
-npm i highlight.js
-```
-
-```html
-<div id="editor"></div>
-```
-
-```html
-<script type="module">
-  import * as KullnaEditor from '@kullna/editor';
-  import hljs from 'highlight.js';
-
-  const editorElement = document.querySelector('#editor');
-
-  const editor = KullnaEditor.createEditor(editorElement, {
-    language: 'javascript',
-    highlight: hljs.highlightElement,
-    gutter: {class: 'gutter'}
-  });
-</script>
-```
-
-> 💡 **Tip:** Check out the other options in the [Documentation](docs.md).
-
-## Styling
-
-We recommend the use of the [Source Code Pro](https://fonts.google.com/specimen/Source+Code+Pro)
-font for the editor. You can include it in your page like this:
-
-```html
-<link
-  rel="stylesheet"
-  href="https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap"
-/>
-```
-
-We are also partial to Highlight.js's Solarized Dark theme for syntax highlighting. You can include
-it in your page like this:
-
-```html
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/styles/base16/solarized-dark.min.css"
-/>
-```
-
-Finally, we like the following styles for a small embedded editor. This example gives you a good
-starting point for customizing the editor to your needs:
-
-```html
-<style>
-  .editor {
-    border-radius: 6px;
-    font-family: 'Source Code Pro', monospace;
-    font-size: 14px;
-    font-weight: 400;
-    min-height: 240px;
-    line-height: 20px;
-  }
-
-  .editor > div {
-    padding: 10px;
-  }
-
-  .gutter {
-    background-color: #002b36;
-    color: #839496;
-  }
-</style>
-```
+👉 [Read the Contributing Page](https://editor.kullna.org/CONTRIBUTING.html) for more details.
 
 ---
 
-_The Kullna Editor source, artifacts, and website content are **Copyright (c) 2023 The Kullna
-Programming Language Project.** They are free to use and open-source under the terms of the
-[GNU Lesser General Public License](https://www.gnu.org/licenses/lgpl-3.0)._
+The Kullna Editor source, artifacts, and website content are **Copyright (c) 2023
+[The Kullna Programming Language Project](https://www.kullna.org/).**
 
-_Portions of this library are [Copyright (c) 2020 Anton Medvedev and others](NOTICE.md) and used
-under the terms of the MIT License_
+They are free to use and open-source under the terms of the
+[GNU Lesser General Public License](https://www.gnu.org/licenses/lgpl-3.0).

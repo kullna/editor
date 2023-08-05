@@ -1,8 +1,16 @@
 version = 1
 
+exclude_patterns = [  
+  "assets/**",  
+  "**/node_modules/",
+  "*.js",  
+  "*.md",  
+  "*.html",
+  "*.css"
+]
+
 [[analyzers]]
 name = "javascript"
 
   [analyzers.meta]
   environment = ["browser"]
-  skip_doc_coverage = ["arrow-function-expression"]

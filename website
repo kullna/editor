@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+rm -rf ./docs/
+mkdir ./docs/
+npm run document:gen
+cp ./*.html ./docs/
+cp ./*.css ./docs/
+cp -r ./assets/* ./docs/assets
+cp -r ./dist ./docs

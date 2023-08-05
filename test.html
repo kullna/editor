@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>@kullna/editor Testing</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/styles/base16/solarized-dark.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css"
+    />
+    <link rel="stylesheet" href="/assets/css/theme.css" />
+    <style>
+      :root {
+        --sd-base03: #002b36;
+        --sd-base02: #073642;
+        --sd-base01: #586e75;
+        --sd-base00: #657b83;
+        --sd-base0: #839496;
+        --sd-base1: #93a1a1;
+        --sd-base2: #eee8d5;
+        --sd-base3: #fdf6e3;
+        --sd-yellow: #b58900;
+        --sd-orange: #cb4b16;
+        --sd-red: #dc322f;
+        --sd-magenta: #d33682;
+        --sd-violet: #6c71c4;
+        --sd-blue: #268bd2;
+        --sd-cyan: #2aa198;
+        --sd-green: #859900;
+      }
+
+      @font-face {
+        font-family: 'KawkabMonoRegular';
+        src:
+          url('./assets/fonts/KawkabMono-Regular.woff2') format('woff2'),
+          url('./assets/fonts/KawkabMono-Regular.woff') format('woff');
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        min-height: 100vh;
+      }
+
+      main {
+        margin: 40px auto;
+        padding: 20px;
+      }
+
+      .editor {
+        background-color: var(--sd-base02);
+        border-radius: 10px;
+        box-shadow:
+          rgba(0, 0, 0, 0.4) 0px 2px 4px,
+          rgba(0, 0, 0, 0.3) 0px 7px 13px -3px,
+          rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+        font-family: 'KawkabMonoRegular', 'Source Code Pro', monospace;
+        font-size: 12px;
+        font-weight: 400;
+        min-height: 240px;
+        width: 700px;
+        letter-spacing: normal;
+        line-height: 20px;
+        tab-size: 4;
+        margin-top: 20px;
+        margin-left: 50%;
+        left: -50%;
+      }
+
+      .breakpoint {
+        background-color: var(--sd-red);
+        position: absolute;
+        border-radius: 50%;
+        width: 0.8em;
+        height: 0.8em;
+        display: inline-flex;
+        margin-left: -38px;
+        margin-top: 5px;
+      }
+
+      .code-gutter-highlight {
+        background-color: #ffffff22;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 8px;
+        bottom: 9px;
+      }
+
+      .code-gutter {
+        background-color: var(--sd-base03);
+        color: var(--sd-base0);
+        border-color: var(--sd-base00);
+      }
+
+      .code-gutter-light {
+        background-color: var(--sd-base2);
+        color: var(--sd-base1);
+      }
+
+      .editor > div {
+        padding: 10px;
+      }
+
+      h2 {
+        margin-top: 50px;
+      }
+
+      #editor-prism {
+        background-color: var(--sd-base3);
+      }
+    </style>
+  </head>
+
+  <body>
+    <main class="container-lg px-3 my-5 markdown-body">
+      <h1 align="center">@kullna/editor Demos</h1>
+      <p align="center">
+        <a href="https://editor.kullna.org/"
+          ><img src="https://www.kullna.org/brand/logo.svg" width="150"
+        /></a>
+      </p>
+      <h1 align="center" style="color: var(--sd-red)">Local Developer Test Page</h1>
+      <h3 align="center" style="color: var(--sd-red)">
+        This page is for developers testing locally
+      </h3>
+      <hr />
+      <form>
+        <h4>General Settings</h4>
+        <table width="100%">
+          <tr>
+            <td width="80%">Setting</td>
+            <td width="20%">Value</td>
+          </tr>
+          <tr>
+            <td>
+              <code>spellcheck</code>: boolean <br />
+              The `spellcheck` option specifies whether the editor should spellcheck the text.
+            </td>
+            <td>
+              <input type="checkbox" id="spellcheck" />
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <code>language</code>: string <br />
+              The `language` option specifies the language that is used for syntax highlighting. It
+              does this by adding a class named "language-[language]" to the editor's content
+              element.
+            </td>
+            <td>
+              <input type="text" id="language" value="javascript" />
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <code>highlight</code>: function <br />
+              The `highlight` option specifies a function that is called when the editor is updated.
+              The function is passed the editor element and can be used to highlight the code.
+            </td>
+            <td>
+              <select id="highlight">
+                <option value="none">None</option>
+                <option value="Highlight.JS" selected>Highlight.JS</option>
+                <option value="Prism.JS">Prism.JS</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <code>dir</code>: string <br />
+              The `dir` option specifies the direction of prevailing script used in the editor.
+            </td>
+            <td>
+              <select id="dir">
+                <option value="ltr" selected>ltr</option>
+                <option value="rtl">rtl</option>
+              </select>
+            </td>
+          </tr>
+        </table>
+        <h4>Tab Settings</h4>
+        <table width="100%">
+          <tr>
+            <td width="80%">Setting</td>
+            <td width="20%">Value</td>
+          </tr>
+          <tr>
+            <td>
+              <code>tab</code>: string <br />
+              The `tab` option specifies the string that is inserted when the user presses the tab
+              key.
+            </td>
+            <td>
+              <select id="tab">
+                <option value="tab">tab</option>
+                <option value="2" selected>2 spaces</option>
+                <option value="4">4 spaces</option>
+                <option value="8">8 spaces</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <code>catchTab</code>: boolean <br />
+              The `catchTab` option specifies whether the editor should catch the tab key and
+              prevent it from moving focus to the next element as well as allowing the user to
+              indent the current line or insert a tab character. This setting is currently enabled
+              by default.
+            </td>
+            <td>
+              <input type="checkbox" id="catchTab" checked />
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <code>multilineIndentation</code>: boolean <br />
+              Enabling `multilineIndentation` allows users to select blocks of text and indent (or
+              dedent) them with the tab (or shift-tab) key. This setting is currently disabled by
+              default. Note that this feature does not currently work with Firefox, and will be
+              disabled automatically if the browser does not support it.
+            </td>
+            <td>
+              <input type="checkbox" id="multilineIndentation" />
+            </td>
+          </tr>
+        </table>
+        <h4>Enter Settings</h4>
+        <table width="100%">
+          <tr>
+            <td width="80%">Setting</td>
+            <td width="20%">Value</td>
+          </tr>
+          <tr>
+            <td>
+              <code>preserveIdent</code>: boolean <br />
+              If `preserveIdent` is true, the editor will preserve the indentation of the current
+              line on the next line when pressing enter.
+            </td>
+            <td>
+              <input type="checkbox" id="preserveIdent" />
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <code>indentOn</code>: RegExp <br />
+              The `indentOn` option specifies a regular expression that is used to determine whether
+              the editor should indent the new line further when the user presses the enter key.
+            </td>
+            <td>
+              <input type="text" id="indentOn" value="^.*\{$" />
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <code>moveToNewLine</code>: RegExp <br />
+              The `moveToNewLine` option specifies a regular expression that is used to determine
+              whether the editor should move the cursor to the beginning of the next line when the
+              user presses the enter key.
+            </td>
+            <td>
+              <input type="text" id="moveToNewLine" value="^.*\{$" />
+            </td>
+          </tr>
+        </table>
+        <h4>Input Filter Settings</h4>
+        <table width="100%">
+          <tr>
+            <td width="80%">Setting</td>
+            <td width="20%">Value</td>
+          </tr>
+          <tr>
+            <td>
+              <code>addClosing</code>: boolean <br />
+              If `addClosing` is true, the editor will automatically add closing brackets, quotes,
+              etc. when typing.
+            </td>
+            <td>
+              <input type="checkbox" id="addClosing" />
+            </td>
+          </tr>
+        </table>
+        <h4>Gutter Settings</h4>
+        <table width="100%">
+          <tr>
+            <td width="80%">Setting</td>
+            <td width="20%">Value</td>
+          </tr>
+          <tr>
+            <td>
+              <code>width</code>: string <br />
+              The `width` of the gutter.
+            </td>
+            <td>
+              <input type="text" id="gutterWidth" value="30px" />
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <code>class</code>: string <br />
+              The `class` to add to the gutter div in the DOM.
+            </td>
+            <td>
+              <input type="text" id="gutterClass" value="" />
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <code>customizer</code>: function <br />
+              The `customizer` function can be used to customize the gutter line numbers (and their
+              accessories).
+            </td>
+            <td>
+              <select id="gutterCustomizer">
+                <option value="none">None</option>
+                <option value="Customizer">Customizer</option>
+              </select>
+            </td>
+          </tr>
+        </table>
+
+        <input type="submit" value="Update" />
+      </form>
+      <div id="demos"></div>
+      <p><br /></p>
+      <p>
+        <em
+          >The Kullna Editor source, artifacts, and website content are
+          <strong
+            >Copyright (c) 2023
+            <a href="https://www.kullna.org/">The Kullna Programming Language Project</a>.</strong
+          >
+          <br />
+          They are free to use and open-source under the terms of the
+          <a href="https://www.gnu.org/licenses/lgpl-3.0">GNU Lesser General Public License</a>.</em
+        >
+      </p>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+
+    <script type="module">
+      import * as KullnaEditor from './dist/kullna-editor.esm.js';
+
+      function demoWithOptions(parentSelector, id, options, defaultValue) {
+        const parent = document.querySelector(parentSelector);
+
+        const element = document.createElement('div');
+        element.className = 'editor';
+        element.id = 'editor-' + id;
+        parent.appendChild(element);
+
+        const editor = KullnaEditor.createEditor(element, options);
+        editor.spellcheck = false;
+        editor.code = defaultValue;
+        editor.onSelectionFocusChanged(document => {
+          editor.highlightedLine = document.currentLineNumber;
+        });
+      }
+
+      document.onreadystatechange = () => {
+        if (document.readyState !== 'complete') {
+          return;
+        }
+
+        demoWithOptions(
+          '#demos',
+          'standard',
+          {
+            language: 'html',
+            highlightElement: e => {
+              hljs.highlightElement(e);
+              e.style.backgroundColor = 'transparent';
+              // skipcq: JS-0002: Avoid console
+              console.log('⚠️  Client Highlighter Called');
+            },
+            onUpdate: () => {
+              // skipcq: JS-0002: Avoid console
+              console.log('⚠️  Client Update Called');
+            },
+            gutter: {
+              width: '55px',
+              border: true,
+              class: 'code-gutter',
+              renderGutterLine: (lineNumber, gutterLineElement) => {
+                gutterLineElement.accessorySpan.innerHtml = '';
+                if (lineNumber === 5) {
+                  const breakpoint = document.createElement('div');
+                  breakpoint.classList.add('breakpoint');
+                  gutterLineElement.accessorySpan.appendChild(breakpoint);
+                }
+              }
+            }
+          },
+          `<div id="editor"><\/div>
+<script>
+  const editor = KullnaEditor.createEditor('#editor', {
+    language: 'html',
+    highlightElement: hljs.highlightElement(e),
+    gutter: {
+      width: '55px',
+      border: true,
+      class: 'code-gutter',
+      renderGutterLine: (lineNumber, gutterLineElement) => {
+        gutterLineElement.accessorySpan.innerHtml = '';
+        if (lineNumber === 5) {
+          const breakpoint = document.createElement('div');
+          breakpoint.classList.add('breakpoint');
+          gutterLineElement.accessorySpan.appendChild(breakpoint);
+        }
+      }
+    }
+  });
+  editor.spellcheck = false;
+  editor.code = defaultValue;
+  editor.onSelectionFocusChanged(document => {
+    editor.highlightedLine = document.currentLineNumber;
+  });
+<\/script>`
+        );
+      };
+    </script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.1.0/anchor.min.js"
+      integrity="sha256-lZaRhKri35AyJSypXXs4o6OPFTbTmUoltBbDCbdzegg="
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      anchors.add();
+    </script>
+  </body>
+</html>
