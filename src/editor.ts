@@ -17,99 +17,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 // skipcq: JS-C1003: Wildcard Imports
 import * as Gutter from './gutter';
 import {Cursor} from './cursor';
-
-/**
- * The `EditorOptions` interface specifies the options that can be
- * passed to the `Editor` constructor.
- */
-export interface EditorOptions {
-  /**
-   * The `tab` option specifies the string that is inserted when the
-   * user presses the tab key.
-   */
-  tab: string;
-  /**
-   * The `indentOn` option specifies a regular expression that is used
-   * to determine whether the editor should indent the new line further
-   * when the user presses the enter key.
-   */
-  indentOn: RegExp;
-  /**
-   * The `moveToNewLine` option specifies a regular expression that is
-   * used to determine whether the editor should move the cursor to the
-   * beginning of the next line when the user presses the enter key.
-   */
-  moveToNewLine: RegExp;
-  /**
-   * The `spellcheck` option specifies whether the editor should
-   * spellcheck the text.
-   */
-  spellcheck: boolean;
-  /**
-   * The `catchTab` option specifies whether the editor should catch
-   * the tab key and prevent it from moving focus to the next element
-   * as well as allowing the user to indent the current line or insert
-   * a tab character.
-   * This setting is currently enabled by default.
-   */
-  catchTab: boolean;
-  /**
-   * Enabling `multilineIndentation` allows users to select blocks of
-   * text and indent (or dedent) them with the tab (or shift-tab) key.
-   * This setting is currently disabled by default.
-   *
-   * Note that this feature does not currently work with Firefox, and
-   * will be disabled automatically if the browser does not support it.
-   */
-  multilineIndentation: boolean;
-  /**
-   * If `preserveIdent` is true, the editor will preserve the
-   * indentation of the current line on the next line when pressing enter.
-   */
-  preserveIdent: boolean;
-  /**
-   * If `addClosing` is true, the editor will automatically add closing
-   * brackets, quotes, etc. when typing.
-   */
-  addClosing: boolean;
-  /**
-   * If `history` is true, the editor will keep track of the user's
-   * history and allow them to undo/redo changes.
-   */
-  history: boolean;
-  /**
-   * If `window` is defined, the editor will use the given window
-   * instead of the global `window` object.
-   */
-  window: typeof window;
-  /**
-   * The `contentClass` option specifies the class name that is added
-   * to the editor's content element.
-   */
-  contentClass: string;
-  /**
-   * The `gutter` option specifies options for the gutter and line
-   * numbers.
-   */
-  gutter: Partial<Gutter.GutterOptions>;
-  /**
-   * The `language` option specifies the language that is used for
-   * syntax highlighting. It does this by adding a class named "language-[language]"
-   * to the editor's content element.
-   */
-  language: string;
-  /**
-   * The `highlight` option specifies a function that is called when
-   * the editor is updated. The function is passed the editor element
-   * and can be used to highlight the code.
-   */
-  highlight?: (e: HTMLElement) => void;
-  /**
-   * The `dir` option specifies the direction of prevailing script
-   * used in the editor.
-   */
-  dir: 'ltr' | 'rtl';
-}
+import {EditorKeyboardEvent} from './editor_keyboard_event';
+import {EditorOptions} from './editor_options';
 
 /**
  * The `HistoryRecord` interface specifies the format of a history
@@ -152,6 +61,20 @@ export interface Editor {
    */
   destroy(): void;
 }
+
+/**
+ * The delay in milliseconds before the highlight function is called.
+ * Additional highlight requests made within this time period will be
+ * ignored.
+ */
+const HIGHLIGHT_DEBOUNCE_MS = 30;
+
+/**
+ * The delay in milliseconds before undo/redo history is updated.
+ * Additional changes made within this time period will be
+ * ignored for the purposes of scheduling an undo/redo history update.
+ */
+const HISTORY_DEBOUNCE_MS = 300;
 
 /**
  * Creates a new editor instance.
@@ -218,6 +141,7 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const listeners: [string, any][] = [];
   const history: HistoryRecord[] = [];
+  let recording = false;
   let at = -1;
   let focus = false;
   let onUpdate: (code: string) => void = () => {
@@ -249,29 +173,28 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
     options.multilineIndentation = false;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function debounce(cb: any, wait: number) {
+    let timeout = 0;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (...args: any) => {
+      clearTimeout(timeout);
+      timeout = wnd.setTimeout(() => cb(...args), wait);
+    };
+  }
+
   const debounceHighlight = debounce(() => {
     const pos = save();
     doHighlight(editor, pos);
     restore(pos);
-  }, 30);
+  }, HIGHLIGHT_DEBOUNCE_MS);
 
-  let recording = false;
-  const shouldRecord = (event: KeyboardEvent): boolean => {
-    return (
-      !isUndo(event) &&
-      !isRedo(event) &&
-      event.key !== 'Meta' &&
-      event.key !== 'Control' &&
-      event.key !== 'Alt' &&
-      !event.key.startsWith('Arrow')
-    );
-  };
-  const debounceRecordHistory = debounce((event: KeyboardEvent) => {
-    if (shouldRecord(event)) {
+  const debounceRecordHistory = debounce((event: EditorKeyboardEvent) => {
+    if (event.isMutatingInput) {
       recordHistory();
       recording = false;
     }
-  }, 300);
+  }, HISTORY_DEBOUNCE_MS);
 
   const on = <K extends keyof HTMLElementEventMap>(
     type: K,
@@ -284,28 +207,35 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
   on('keydown', event => {
     if (event.defaultPrevented) return;
 
-    prev = toString();
-    if (options.preserveIdent) handleNewLine(event);
-    else legacyNewLineFix(event);
-    if (options.catchTab) handleTabCharacters(event);
-    if (options.addClosing) handleSelfClosingCharacters(event);
+    const editorEvent = new EditorKeyboardEvent(event);
+
+    prev = editorTextContent();
+    if (options.preserveIdent) {
+      handleNewLine(editorEvent);
+    } else {
+      legacyNewLineFix(editorEvent);
+    }
+    if (options.catchTab) handleTabCharacters(editorEvent);
+    if (options.addClosing) handleSelfClosingCharacters(editorEvent);
     if (options.history) {
-      handleUndoRedo(event);
-      if (shouldRecord(event) && !recording) {
+      handleUndoRedo(editorEvent);
+      if (editorEvent.isMutatingInput && !recording) {
         recordHistory();
         recording = true;
       }
     }
-    if (isLegacy && !isCopy(event)) restore(save());
+    if (isLegacy && !editorEvent.isCopy) restore(save());
   });
 
   on('keyup', event => {
     if (event.defaultPrevented) return;
     if (event.isComposing) return;
 
-    if (prev !== toString()) debounceHighlight();
-    debounceRecordHistory(event);
-    onUpdate(toString());
+    const editorEvent = new EditorKeyboardEvent(event);
+
+    if (prev !== editorTextContent()) debounceHighlight();
+    debounceRecordHistory(editorEvent);
+    onUpdate(editorTextContent());
   });
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -322,14 +252,14 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
     recordHistory();
     handlePaste(event);
     recordHistory();
-    onUpdate(toString());
+    onUpdate(editorTextContent());
   });
 
   on('cut', event => {
     recordHistory();
     handleCut(event);
     recordHistory();
-    onUpdate(toString());
+    onUpdate(editorTextContent());
   });
 
   /**
@@ -337,7 +267,7 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
    * @returns The current position.
    */
   function save(): Position {
-    const selection = getSelection();
+    const selection = Cursor.getSelection(editor);
     const pos: Position = {start: 0, end: 0, dir: undefined};
 
     let {anchorNode, anchorOffset, focusNode, focusOffset} = selection;
@@ -410,7 +340,7 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
    * @param pos The position to restore.
    */
   function restore(pos: Position) {
-    const selection = getSelection();
+    const selection = Cursor.getSelection(editor);
     let startNode: Node | undefined,
       startOffset = 0;
     let endNode: Node | undefined,
@@ -502,46 +432,11 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
     }
   }
 
-  /**
-   * Handles "enter" key press.
-   * @param event The keydown event.
-   */
-  function handleNewLine(event: KeyboardEvent) {
-    if (event.key === 'Enter') {
-      const before = Cursor.textBeforeCursor(editor);
-      const after = Cursor.textAfterCursor(editor);
-
-      const [padding] = findPadding(before);
-      let newLinePadding = padding;
-
-      // If last symbol is "{" ident new line
-      if (options.indentOn.test(before)) {
-        newLinePadding += options.tab;
-      }
-
-      // Preserve padding
-      if (newLinePadding.length > 0) {
-        preventDefault(event);
-        event.stopPropagation();
-        insert(`\n${newLinePadding}`);
-      } else {
-        legacyNewLineFix(event);
-      }
-
-      // Place adjacent "}" on next line
-      if (newLinePadding !== padding && options.moveToNewLine.test(after)) {
-        const pos = save();
-        insert(`\n${padding}`);
-        restore(pos);
-      }
-    }
-  }
-
-  function legacyNewLineFix(event: KeyboardEvent) {
+  function legacyNewLineFix(event: EditorKeyboardEvent) {
     // Firefox does not support plaintext-only mode
     // and puts <div><br></div> on Enter. Let's help.
-    if (isLegacy && event.key === 'Enter') {
-      preventDefault(event);
+    if (isLegacy && event.isEnter) {
+      event.preventDefault();
       event.stopPropagation();
       if (Cursor.textAfterCursor(editor) === '') {
         insert('\n ');
@@ -551,40 +446,6 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
       } else {
         insert('\n');
       }
-    }
-  }
-
-  /**
-   * Handles inserting closing characters if the user enters a starting character.
-   * @param event The keydown event.
-   */
-  function handleSelfClosingCharacters(event: KeyboardEvent) {
-    const open = `([{'"`;
-    const close = `)]}'"`;
-    const codeAfter = Cursor.textAfterCursor(editor);
-    const codeBefore = Cursor.textBeforeCursor(editor);
-    const escapeCharacter = codeBefore.substr(codeBefore.length - 1) === '\\';
-    const charAfter = codeAfter.substr(0, 1);
-    if (close.includes(event.key) && !escapeCharacter && charAfter === event.key) {
-      // We already have closing char next to cursor.
-      // Move one char to right.
-      const pos = save();
-      preventDefault(event);
-      pos.start = ++pos.end;
-      restore(pos);
-    } else if (
-      open.includes(event.key) &&
-      !escapeCharacter &&
-      (`"'`.includes(event.key) ?? ['', ' ', '\n'].includes(charAfter))
-    ) {
-      preventDefault(event);
-      const pos = save();
-      const wrapText = pos.start === pos.end ? '' : getSelection().toString();
-      const text = event.key + wrapText + close[open.indexOf(event.key)];
-      insert(text);
-      pos.start++;
-      pos.end++;
-      restore(pos);
     }
   }
 
@@ -608,24 +469,92 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
   }
 
   /**
+   * Handles "enter" key press.
+   * @param event The keydown event.
+   */
+  function handleNewLine(event: EditorKeyboardEvent) {
+    if (event.isEnter) {
+      const before = Cursor.textBeforeCursor(editor);
+      const after = Cursor.textAfterCursor(editor);
+
+      const [padding] = findPadding(before);
+      let newLinePadding = padding;
+
+      // If last symbol is "{" ident new line
+      if (options.indentOn.test(before)) {
+        newLinePadding += options.tab;
+      }
+
+      // Preserve padding
+      if (newLinePadding.length > 0) {
+        event.preventDefault();
+        event.stopPropagation();
+        insert(`\n${newLinePadding}`);
+      } else {
+        legacyNewLineFix(event);
+      }
+
+      // Place adjacent "}" on next line
+      if (newLinePadding !== padding && options.moveToNewLine.test(after)) {
+        const pos = save();
+        insert(`\n${padding}`);
+        restore(pos);
+      }
+    }
+  }
+
+  /**
+   * Handles inserting closing characters if the user enters a starting character.
+   * @param event The keydown event.
+   */
+  function handleSelfClosingCharacters(event: EditorKeyboardEvent) {
+    const open = `([{'"`;
+    const close = `)]}'"`;
+    const codeAfter = Cursor.textAfterCursor(editor);
+    const codeBefore = Cursor.textBeforeCursor(editor);
+    const escapeCharacter = codeBefore.substr(codeBefore.length - 1) === '\\';
+    const charAfter = codeAfter.substr(0, 1);
+    if (close.includes(event.keyCode) && !escapeCharacter && charAfter === event.keyCode) {
+      // We already have closing char next to cursor.
+      // Move one char to right.
+      const pos = save();
+      event.preventDefault();
+      pos.start = ++pos.end;
+      restore(pos);
+    } else if (
+      open.includes(event.keyCode) &&
+      !escapeCharacter &&
+      (`"'`.includes(event.keyCode) || ['', ' ', '\n'].includes(charAfter))
+    ) {
+      event.preventDefault();
+      const pos = save();
+      const wrapText = pos.start === pos.end ? '' : Cursor.getSelection(editor).toString();
+      const text = event.keyCode + wrapText + close[open.indexOf(event.keyCode)];
+      insert(text);
+      pos.start++;
+      pos.end++;
+      restore(pos);
+    }
+  }
+
+  /**
    * Handles inserting tab characters when the user presses the tab key.
    * @param event The keydown event.
    */
-  function handleTabCharacters(event: KeyboardEvent) {
-    if (event.key !== 'Tab') {
+  function handleTabCharacters(event: EditorKeyboardEvent) {
+    if (!event.isTab) {
       return;
     }
-
-    preventDefault(event);
+    event.preventDefault();
 
     // For standard tab behavior, simply allow the tab to be inserted (or
     // removed.) This behavior could probably be combined with the multi-line
     // behavior below but this is being left as-is for now to de-risk the
     // multiline behavior change and maintain the previous behavior of the
     // library by default.
-    const selection = getSelection();
+    const selection = Cursor.getSelection(editor);
     if (!options.multilineIndentation || selection.getRangeAt(0).collapsed) {
-      if (event.shiftKey) {
+      if (event.isShift) {
         const before = Cursor.textBeforeCursor(editor);
         const [padding, start] = findPadding(before);
         if (padding.length > 0) {
@@ -661,7 +590,7 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
 
     let insertedCharacters = 0;
     // If the shift key is being held, it's a dedent request.
-    if (event.shiftKey) {
+    if (event.isShift) {
       for (let i = 0; i < lineCount; i++) {
         // We can only dedent lines that begin with some sort of whitespace.
         // So we check for that first, and never consume more characters than
@@ -693,9 +622,9 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
    * Handles undo/redo.
    * @param event The keydown event.
    */
-  function handleUndoRedo(event: KeyboardEvent) {
-    if (isUndo(event)) {
-      preventDefault(event);
+  function handleUndoRedo(event: EditorKeyboardEvent) {
+    if (event.isUndo) {
+      event.preventDefault();
       at--;
       const record = history[at];
       if (record) {
@@ -704,8 +633,8 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
       }
       if (at < 0) at = 0;
     }
-    if (isRedo(event)) {
-      preventDefault(event);
+    if (event.isRedo) {
+      event.preventDefault();
       at++;
       const record = history[at];
       if (record) {
@@ -752,7 +681,7 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
    */
   function handlePaste(event: ClipboardEvent) {
     if (event.defaultPrevented) return;
-    preventDefault(event);
+    event.preventDefault();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const originalEvent = (event as any).originalEvent ?? event;
     const text = originalEvent.clipboardData.getData('text/plain').replace(/\r\n?/g, '\n');
@@ -772,7 +701,7 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
    */
   function handleCut(event: ClipboardEvent) {
     const pos = save();
-    const selection = getSelection();
+    const selection = Cursor.getSelection(editor);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const originalEvent = (event as any).originalEvent ?? event;
     originalEvent.clipboardData.setData('text/plain', selection.toString());
@@ -783,7 +712,7 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
       end: Math.min(pos.start, pos.end),
       dir: '<-'
     });
-    preventDefault(event);
+    event.preventDefault();
   }
 
   /**
@@ -809,51 +738,6 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
   }
 
   /**
-   * Returns true if the given event contains a ctrl key.
-   */
-  function isCtrl(event: KeyboardEvent) {
-    return event.metaKey || event.ctrlKey;
-  }
-
-  /**
-   * Returns true if the given event represents a standard undo keyboard sequence.
-   * @param event The keyboard event.
-   * @returns True if the event represents a standard undo keyboard sequence.
-   */
-  function isUndo(event: KeyboardEvent) {
-    return isCtrl(event) && !event.shiftKey && getKeyCode(event) === 'Z';
-  }
-
-  /**
-   * Returns true if the given event represents a standard redo keyboard sequence.
-   * @param event The keyboard event.
-   * @returns True if the event represents a standard redo keyboard sequence.
-   */
-  function isRedo(event: KeyboardEvent) {
-    return isCtrl(event) && event.shiftKey && getKeyCode(event) === 'Z';
-  }
-
-  /**
-   * Returns true if the given event represents a standard copy keyboard sequence.
-   * @param event The keyboard event.
-   * @returns True if the event represents a standard copy keyboard sequence.
-   */
-  function isCopy(event: KeyboardEvent) {
-    return isCtrl(event) && getKeyCode(event) === 'C';
-  }
-
-  /**
-   * Obtains the key code from a keyboard event.
-   * @param event The keyboard event.
-   * @returns The key code.
-   */
-  function getKeyCode(event: KeyboardEvent): string | undefined {
-    const key = event.key ?? event.keyCode ?? event.which;
-    if (!key) return undefined;
-    return (typeof key === 'string' ? key : String.fromCharCode(key)).toUpperCase();
-  }
-
-  /**
    * Performs primitive HTML escaping and inserts the given text into the editor.
    * @param text The text to sanitize and insert.
    */
@@ -867,16 +751,6 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
     document.execCommand('insertHTML', false, text);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function debounce(cb: any, wait: number) {
-    let timeout = 0;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (...args: any) => {
-      clearTimeout(timeout);
-      timeout = wnd.setTimeout(() => cb(...args), wait);
-    };
-  }
-
   function findPadding(text: string): [string, number, number] {
     // Find beginning of previous line.
     let i = text.length - 1;
@@ -885,43 +759,26 @@ export function createEditor(parent: HTMLElement, opt: Partial<EditorOptions> = 
     // Find padding of the line.
     let j = i;
     while (j < text.length && /[ \t]/.test(text[j])) j++;
-    return [text.substring(i, j) ?? '', i, j];
+    return [text.substring(i, j), i, j];
   }
 
   /**
    * Returns the text content of the editor.
    * @returns The text content of the editor.
    */
-  function toString() {
+  function editorTextContent() {
     return editor.textContent ?? '';
-  }
-
-  /**
-   * Prevents the default action of the given event.
-   * @param event The event.
-   */
-  function preventDefault(event: Event) {
-    event.preventDefault();
-  }
-
-  /**
-   * Returns the current selection.
-   * @returns The current selection.
-   */
-  function getSelection(): Selection {
-    return Cursor.getSelection(editor);
   }
 
   return {
     updateCode(code: string) {
       editor.textContent = code;
       doHighlight(editor);
-      onUpdate(code);
     },
     onUpdate(callback: (code: string) => void) {
       onUpdate = callback;
     },
-    toString,
+    toString: editorTextContent,
     destroy() {
       for (const [type, fn] of listeners) {
         editor.removeEventListener(type, fn);
