@@ -22,20 +22,57 @@ import {GutterLineElement} from './line';
  * This is the type of function that can be passed to the Gutter options which provides you with
  * chance to customize gutter appearance.
  *
- * ## Inserting a Breakpoint
+ * ## Example: Inserting a Breakpoint
  *
  * To insert a breakpoint, you can use the following code:
  *
- * ```ts
- * (lineNumber: number, gutterLineElement: GutterLineElement) => {
- *   gutterLineElement.accessorySpan.removeAllChildren();
- *   if (lineNumber === 3) {
- *     const breakpoint = document.createElement('div');
- *     breakpoint.classList.add('breakpoint');
- *     gutterLineElement.accessorySpan.appendChild(breakpoint);
- *   }
- * };
+ * ```css
+ * .breakpoint {
+ *   background-color: var(--sd-red);
+ *   display: inline-flex;
+ *   border-radius: 50%;
+ *   width: 0.8em;
+ *   height: 0.8em;
+ * }
  * ```
+ *
+ * In the call to {@link createEditor}, you can then pass the following {@link Options.gutter} option:
+ *
+ * ```ts
+ * gutter: {
+ *   renderGutterLine: (lineNumber: number, gutterLineElement: GutterLineElement) => {
+ *     // Remove any existing children so that we don't add multiple breakpoints.
+ *     // And don't have breakpoints where they shouldn't be.
+ *     gutterLineElement.accessorySpan.removeAllChildren();
+ *
+ *     // Insert a breakpoint on line 3.
+ *     if (lineNumber === 3) {
+ *       const breakpoint = document.createElement('div');
+ *       breakpoint.classList.add('breakpoint');
+ *       gutterLineElement.accessorySpan.appendChild(breakpoint);
+ *     }
+ *   };
+ * }
+ * ```
+ *
+ * ## Example: Click Handler
+ *
+ * In the call to {@link createEditor}, you can then pass the following {@link Options.gutter} option:
+ *
+ * ```ts
+ * gutter: {
+ *   renderGutterLine: (lineNumber: number, gutterLineElement: GutterLineElement) => {
+ *     // Remove any previous click handlers (not implemented here.)
+ *     gutterLineElement.gutterLineWrapper.addEventListener('click', () => {
+ *       // Do something when the gutter line is clicked.
+ *     });
+ *   };
+ * }
+ * ```
+ *
+ * For an overview of gutter customization, see {@link Gutters}.
+ *
+ * For details about gutter line elements, see {@link GutterLineElement}.
  *
  * @param lineNumber This is the actual index (+1) of the line in the text of the editor.
  * @param element The DOM elements representing the line number.

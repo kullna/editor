@@ -17,26 +17,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 /**
  * @packageDocumentation # Gutters
  *
- * Gutters are the vertical lines that appear to the left of the editor's text content (typically). They are used to
- * display line numbers, breakpoints, and other information.
+ * Gutters, typically seen as vertical lines on the left of an editor's text,
+ * serve to display line numbers, breakpoints, and other pertinent details.
  *
- * > `@kullna/editor` owns the process of creating and managing the dom elements inside the gutter.
- * > This is done because in the future we would like to use
- * > a more complex strategy for managing the gutter elements by reusing them and not creating
- * > new ones every time the editor's line count changes.
- * > To make this possible, we need to have full control over the gutter elements. We're also not
- * > sure how we want to handle line wrapping.
- * > But we are currently making the gutter the source of truth for "where a line is" in the
- * > editor. We need this for things like line numbers, and line highlighting.
+ * ## Customizing the Gutter
  *
- * ## Customizing the gutter
+ * You can tailor the gutter using both CSS and JavaScript.
  *
- * The gutter can be customized via CSS and JavaScript.
+ * ### CSS Customization
  *
- * ### Recommended CSS Settings
- *
- * The following CSS settings are recommended for the gutter. They set the background color, text
- * color, and border color (which is only visible if the gutter has a border.)
+ * We recommend the following settings for the gutter, defining its background, text,
+ * and border colors:
  *
  * ```css
  * background-color: #f0f0f0;
@@ -44,14 +35,23 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. */
  * color: #606060;
  * ```
  *
- * ### Customizing the Gutter via JavaScript
+ * ### JavaScript Customization
  *
- * In addition to CSS, the gutter can be customized via JavaScript. This is done by passing a
- * `GutterCustomizer` to the `renderGutterLine` option of {@link Options.gutter}. The
- * `GutterCustomizer` is a function that takes a `GutterLineElement` and mutates the DOM
- * to customize it. This allows for things like adding breakpoints, and other accessories to the gutter.
+ * Beyond CSS, you can modify the gutter using JavaScript. This is achieved by providing a `GutterCustomizer` to the `renderGutterLine` option within {@link Options.gutter}. This function lets you modify the `GutterLineElement` in the DOM, facilitating additions like breakpoints and other gutter features.
  *
- * See {@link GutterCustomizer} for more information.
+ * For additional details, refer to {@link GutterCustomizer}.
+ *
+ * ## Development Notes
+ *
+ * 💡 **Note:** **Management by `@kullna/editor`**: The editor handles creating and maintaining
+ *  the DOM elements within the gutter. This approach anticipates future optimization
+ * where we aim to manage gutter elements more efficiently by reusing them, rather than
+ *  creating new ones every time the line count in the editor changes. This strategy
+ * requires the editor to have complete control over these gutter elements. Presently,
+ * the gutter also determines the line's location within the editor, crucial for line
+ * numbers and highlighting - however, this source of truth will shift to the internals
+ * of the selection bridge in the future, as it knows the line's location within the
+ * editor already, and defininitively.
  */
 
 export {GutterLineElement} from './line';

@@ -38,7 +38,7 @@ import {type TextDocument, type TextEditorKeyboardEvent} from '../text_editor';
 export type InputProcessor = (
   document: TextDocument,
   args: InputProcessorArgs
-) => TextDocument | undefined;
+) => TextDocument | undefined | null;
 
 /**
  * # Input Processor Arguments
