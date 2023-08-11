@@ -93,7 +93,6 @@ export class UndoRedoManager<T> {
       const lastRecord = this.stack[this.stackIndex];
       if (lastRecord) {
         if (this.target.undoRedoStatesAreEquivalent(lastRecord, record)) {
-          this.stackIndex++;
           return;
         }
       }

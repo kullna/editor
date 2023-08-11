@@ -42,7 +42,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. */
  *    - {@link Processors.DefaultProcessors}: Contains default input processors.
  * 4. **{@link Text} Management**:
  *    - {@link Text.TextDocument}: Represents the editor's text.
- *    - {@link Text.TextEditorKeyboardEvent}: Represents the editor's keyboard events.
+ *    - {@link Text.TextEditorViewKeyboardEvent}: Represents the editor's keyboard events.
  *
  * With these extension points, you can customize the way the editor handles input and what it does
  * when the text changes. You can also customize the gutter to your needs, including adding

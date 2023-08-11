@@ -17,15 +17,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 /**
  * @packageDocumentation # Input Processors
  *
- * Input processors handle keyboard input from the user; like what happens when the tab or enter
- * keys are pressed.
+ * Input processors are functions that control how
+ * the editor responds to textual input. They have the ability to mutate the editor's code and
+ * selection state, and to prevent the default behavior from executing.
  *
  * Processors can be used to insert additional text and control the cursor; which makes implementing
  * a wide variety of behaviors possible. For example, the default tab processor inserts spaces when
  * the tab key is pressed, and the default newline processor inserts a newline and indents the
- * cursor to the same level as the previous line. Input processors are functions that control how
- * the editor responds to textual input. They have the ability to mutate the editor's code and
- * selection state, and to prevent the default behavior from executing.
+ * cursor to the same level as the previous line.
  *
  * **There are some functions the editor performs that are not controlled by input processors:**
  *
@@ -33,22 +32,33 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. */
  *   internally, and it captures the `Ctrl+Z` and `Ctrl+Shift+Z` key combinations to trigger these.
  * - **Cut/Paste**: The editor captures the `Ctrl+X` and `Ctrl+V` key combinations to trigger these.
  *
- * **There are three types of input processors:**
+ * But most other functions are controlled by input processors.
  *
- * - `BracketProcessor` - Invoked whenever the user presses a key while the editor is focused and the
- *   key is not a special key (e.g. `Enter`, `Tab`, `Backspace`, etc.).
- * - `TabProcessor` - Invoked whenever the user presses the `Tab` key while the editor is focused.
- * - `EnterProcessor` - Invoked whenever the user presses the `Enter` key while the editor is focused.
+ * We call a sequence of input processors a **pipeline**. The pipeline is executed in order, and
+ * each processor has the ability to prevent the default behavior from executing. If a processor
+ * claims to have handled the event, the pipeline stops executing and the default behavior is
+ * prevented. If a processor does not claim to have handled the event, the next processor in the
+ * pipeline is executed.
  *
- * Please see {@link Processors} for more information.
+ * There are three built-in types of input processors that are used in the default configuration of the
+ * keydown pipeline:
+ *
+ * - `BracketProcessor` - Handles bracket pairs, such as `()`, `[]`, and `{}`.
+ * - `TabProcessor` - Handles inserting the correct tab character(s) when the `Tab` key is pressed, and
+ *    handles the `Shift+Tab` key combination. Works for both a cursor and a range selection
+ *    (including ranges over multiple-lines).
+ * - `EnterProcessor` - Handles inserting a newline and indenting the cursor to the same level as the
+ *   previous line.
+ *
+ * Please see {@link DefaultProcessors} for more information.
  *
  * **All Input Processors receive two parameters:**
  *
- * - `editor: TextEditorView` - Allows processors to mutate the document or the cursor.
- * - `args: InputProcessorArgs` - Arguments which include `event: TextEditorKeyboardEvent` which
+ * - `document: TextDocument` - Allows processors to produce a modified document.
+ * - `args: InputProcessorArgs` - Arguments which include `event: TextEditorViewKeyboardEvent` which
  *   contains the key that was pressed, the key code, and other information.
  *
- * Please see {@link TextEditorView} for more information about the editor API. Please see
+ * Please see {@link TextDocument} for more information about the text document API. Please see
  * {@link InputProcessorArgs} for more information about the arguments passed to processors.
  *
  * ## Developing an Input Processor
@@ -59,7 +69,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. */
  * ```js
  * import {
  *     InputProcessorArgs,
- *     TextEditorView,
+ *     TextDocument,
  *     InputProcessor
  * } from '@kullna/editor';
  *
@@ -69,12 +79,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. */
  *
  * // Create a function that returns an InputProcessor:
  * export function createMyProcessor(options: MyOptions): InputProcessor {
- *     return (editor: TextEditorView, args: InputProcessorArgs): boolean => {
+ *     return (document: TextDocument, args: InputProcessorArgs): TextDocument | undefined | null => {
  *         // ... Use the Editor to manipulate the code and selection ...
- *         editor.type('\n');
- *         // ... If you've handled the event, return true ...
- *         return true;
- *         // ... If you still want the event to be handled by the editor, return false ...
+ *         // ... If you've handled the event, mark it as handled:
+ *         args.handled = true;
+ *         return document.type('\n');
+ *         // ... If you still want the event to be handled by the editor, leave it as false...
  *     };
  * }
  * ```
@@ -90,10 +100,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. */
  *     // ... Editor options ...
  *     language = 'javascript',
  *     highlight: hljs.highlightElement,
- *     enterProcessor: {
- *          replacement: createMyProcessor({
- *                // ... Pass your options here ...
- *             })
+ *     // ... Register your processor ...
+ *     keydown: [ createMyProcessor({ /* options * / }) ]
  *    }
  * });
  * ```
