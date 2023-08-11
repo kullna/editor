@@ -19,118 +19,34 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. */
  *
  * Welcome to the documentation for the Kullna Editor!
  *
- * Here you can learn how to customize the editor for use in your own projects.
- *
- * ## Overview
- *
  * The Kullna Editor is a small but feature-rich code editor for the web. It is designed to be
  * simple to use, but also powerful enough to be used in a wide variety of projects. It accomplishes
  * this flexibility by providing a simple API designed to be composable and extensible.
  *
  * This package contains the editor interface {@link KullnaEditor}, as well as the {@link Options}
- * interface, which is used to configure the editor. If you haven't integrated the editor into your
- * project yet, see the {@link KullnaEditor} interface for more information.
+ * interface, which is used to configure the editor via the {@link createEditor} function. If you haven't integrated the editor into your
+ * project yet, see the [Quick Start](/pages/QUICK_START.html) for more information.
  *
  * ## Extending the Editor
  *
- * There are three primary sub-packages:
+ * The editor has several primary extension points.
  *
- * - **{@link Text}** - This package contains the {@link Text.TextDocument} class, which is used to
- *  represent the text in the editor, as well as the {@link Text.TextEditorKeyboardEvent} class,
- * which is used to represent keyboard events in the editor.
- * - **{@link Gutters}** - This package contains the {@link Gutters.GutterLineElement} class, which
- * is used to represent a line in the gutter, as well as the {@link Gutters.GutterCustomizer} class,
- * which is used to customize the gutter.
- * - **{@link Processors}** - This package contains the {@link Processors.InputProcessor} class,
- * which is used to process input in the editor, as well as the {@link Processors.DefaultProcessors}
- * class, which contains the default input processors.
+ * 1. **{@link KullnaEditor} Events**:
+ *    - {@link KullnaEditor.onUpdate}: Called when the text changes.
+ *    - {@link KullnaEditor.onSelectionFocusChanged}: Called when the selection focus changes.
+ * 2. **{@link Gutters} Management**:
+ *    - {@link Gutters.GutterLineElement}: Represents a line in the editor's gutter.
+ *    - {@link Gutters.GutterCustomizer}: Customizes the gutter appearance and behavior.
+ * 3. **{@link Processors}**:
+ *    - {@link Processors.InputProcessor}: Processes the editor's input.
+ *    - {@link Processors.DefaultProcessors}: Contains default input processors.
+ * 4. **{@link Text} Management**:
+ *    - {@link Text.TextDocument}: Represents the editor's text.
+ *    - {@link Text.TextEditorKeyboardEvent}: Represents the editor's keyboard events.
  *
- * ## Customizing the Editor
- *
- * There are two primary ways to customize the editor:
- *
- * - **{@link InputProcessor}** - Input processors are used to process keyboard input in the
- * editor. For example, the {@link DefaultProcessors.TabProcessor} class is used to process the
- * tab key.
- *
- *
- * ## Features
- *
- * **Syntax highlighting**
- *
- * Supply a function with the signature: `(element: HTMLElement) => void` to highlight the content
- * of an element and Kullna Editor will call your function at the right time. See:
- * {@link Options.highlightElement}.
- *
- * 💡 **Note:** This approach is compatible with most syntax highlighting libraries, which usually
- * expose a function that mutates the HTML content of an element with the same function signature.
- * For example, the `highlightElement` function in Highlight.JS.
- *
- * - [Highlight.js API](https://highlightjs.readthedocs.io/en/latest/api.html#highlightelement)
- * - [Prism.js API](https://prismjs.com/docs/Prism.html#.highlightElement)
- *
- * **Undo/Redo**
- *
- * Set the {@link Options.maxUndoHistory} option to configure the number of undo/redo levels.
- *
- * **Cut-Copy-Paste**
- *
- * Cutting, copying, and pasting text work as expected across browsers in an XSS-safe manner.
- *
- * The editor will capture the cut, copy, and paste events and handle them in a way that is
- * consistent across browsers. The editor will also handle the clipboard events in a way that is
- * safe against XSS attacks.
- *
- * 💡 **Note:** The keydown pipeline is not invoked for cut, copy, and paste events. See
- * {@link Processors} for more information.
- *
- * **Bracket Management**
- *
- * Automatically insert closing brackets and quotes, and type-over them seamlessly.
- *
- * The `bracketProcessor` of {@link Processors.DefaultProcessors} is part of the default keydown
- * pipeline. It will automatically insert closing brackets and quotes, and type-over them
- * seamlessly.
- *
- * At initialization time, {@link Options.bracketProcessor} allows this logic to be replaced or
- * extended by supplying a custom {@link Processors.InputProcessor}, customized, or disabled
- * altogether by setting the `enabled` property of to `false`.
- *
- * **Code Indentation**
- *
- * | Indent or unindent lines of code with the tab and shift-tab keys.
- *
- * The `tabProcessor` and `newlineProcessor` of {@link Processors.DefaultProcessors} are part of the
- * default keydown pipeline.
- *
- * The `tabProcessor` will automatically indent or unindent lines of code with the tab and shift-tab
- * keys, including multi-line selections. At initialization time, {@link Options.tabProcessor} allows
- * this logic to be replaced or extended by supplying a custom {@link Processors.InputProcessor},
- * customized, or disabled altogether by setting the `enabled` property of to `false`.
- *
- * The `newlineProcessor` will automatically indent the next line, and possibly move closing
- * brackets to the next line, when the enter key is pressed. At initialization time,
- * {@link Options.newlineProcessor} allows this logic to be replaced or extended by supplying a
- * custom {@link Processors.InputProcessor}, customized, or disabled altogether by setting the
- * `enabled` property of to `false`.
- *
- * **Line Highlighting**
- *
- * **Customizable Gutter**
- *
- * We own the strategy for rendering the gutter - allowing us to continuously improve the
- * foundational features of the editor over time - but you own the rendering of the content. This
- * allows you to customize the gutter to your needs - whether that include tap-targets or icon for
- * breakpoints. The gutter is also fully RTL-aware.
- *
- * **Flexibility**
- *
- * Embed your logic for input events, like auto-complete or inline help.
- *
- * **Full RTL Support**
- *
- * The editor is fully RTL-aware, including the gutter. Setting {@link Options.dir} to `'rtl'` will
- * enable RTL support and cause the editor to render in RTL mode.
+ * With these extension points, you can customize the way the editor handles input and what it does
+ * when the text changes. You can also customize the gutter to your needs, including adding
+ * tap-targets or icons for breakpoints.
  */
 
 import {EditorOptions} from './internals/editor_options';

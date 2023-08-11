@@ -34,7 +34,7 @@
     "website:gen": "./website",
     "website": "npm run website:gen && cd ./docs/ && web-dev-server --app-index ./index.html --node-resolve --open",
     "document": "npm run document:gen && cd ./docs/ && web-dev-server --app-index ./index.html --node-resolve --open",
-    "document:gen": "node generatePackageMetadata.js && typedoc ./src/index.ts --disableSources --hideGenerator --titleLink \"/modules.html\"",
+    "document:gen": "node generatePackageMetadata.js && typedoc ./src/index.ts --disableSources --hideGenerator --darkHighlightTheme solarized-dark --lightHighlightTheme solarized-dark --titleLink \"/modules.html\"",
     "size": "size-limit",
     "lint:ts": "eslint ./src/**/*.ts",
     "lint:prettier": "prettier . --check",

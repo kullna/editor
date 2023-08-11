@@ -5,7 +5,7 @@
 <p align="center">
     <a href="https://editor.kullna.org/demo.html">🔍 Demos</a> •
     <a href="https://editor.kullna.org/modules.html">📖 Docs</a> •
-    <a href="https://editor.kullna.org/CONTRIBUTING.html">🙌 Contribute</a>
+    <a href="https://editor.kullna.org/pages/CONTRIBUTING.html">🙌 Contribute</a>
 </p>
 <p align="center">
     <a href="https://cdn.jsdelivr.net/npm/@kullna/editor/dist/kullna-editor.min.js">
@@ -81,7 +81,7 @@ We envision a community-driven evolution for `@kullna/editor`. Your feedback, id
 contributions can shape the future of this editor, making it even more versatile and user-friendly.
 If our vision resonates with yours, consider contributing.
 
-👉 [Read the Contributing Page](https://editor.kullna.org/CONTRIBUTING.html) for more details.
+👉 [Read the Contributing Page](https://editor.kullna.org/pages/CONTRIBUTING.html) for more details.
 
 ---
 
