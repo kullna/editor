@@ -25,42 +25,40 @@
     --dark-external-icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' width='10' height='10'><path fill-opacity='0' stroke='%23000' stroke-width='10' d='m43,35H5v60h60V57M45,5v10l10,10-30,30 20,20 30-30 10,10h10V5z'/></svg>");
     --dark-color-scheme: light;
 
-      --color-background: var(--light-color-background);
-      --color-background-secondary: var(--light-color-background-secondary);
-      --color-background-warning: var(--light-color-background-warning);
-      --color-warning-text: var(--light-color-warning-text);
-      --color-icon-background: var(--light-color-icon-background);
-      --color-accent: var(--light-color-accent);
-      --color-active-menu-item: var(--light-color-active-menu-item);
-      --color-text: var(--light-color-text);
-      --color-text-aside: var(--light-color-text-aside);
-      --color-link: var(--light-color-link);
+    --color-background: var(--light-color-background);
+    --color-background-secondary: var(--light-color-background-secondary);
+    --color-background-warning: var(--light-color-background-warning);
+    --color-warning-text: var(--light-color-warning-text);
+    --color-icon-background: var(--light-color-icon-background);
+    --color-accent: var(--light-color-accent);
+    --color-active-menu-item: var(--light-color-active-menu-item);
+    --color-text: var(--light-color-text);
+    --color-text-aside: var(--light-color-text-aside);
+    --color-link: var(--light-color-link);
 
-      --color-ts-module: var(--light-color-ts-module);
-      --color-ts-namespace: var(--light-color-ts-namespace);
-      --color-ts-enum: var(--light-color-ts-enum);
-      --color-ts-enum-member: var(--light-color-ts-enum-member);
-      --color-ts-variable: var(--light-color-ts-variable);
-      --color-ts-function: var(--light-color-ts-function);
-      --color-ts-class: var(--light-color-ts-class);
-      --color-ts-interface: var(--light-color-ts-interface);
-      --color-ts-constructor: var(--light-color-ts-constructor);
-      --color-ts-property: var(--light-color-ts-property);
-      --color-ts-method: var(--light-color-ts-method);
-      --color-ts-call-signature: var(--light-color-ts-call-signature);
-      --color-ts-index-signature: var(--light-color-ts-index-signature);
-      --color-ts-constructor-signature: var(
-          --light-color-ts-constructor-signature
-      );
-      --color-ts-parameter: var(--light-color-ts-parameter);
-      --color-ts-type-parameter: var(--light-color-ts-type-parameter);
-      --color-ts-accessor: var(--light-color-ts-accessor);
-      --color-ts-get-signature: var(--light-color-ts-get-signature);
-      --color-ts-set-signature: var(--light-color-ts-set-signature);
-      --color-ts-type-alias: var(--light-color-ts-type-alias);
+    --color-ts-module: var(--light-color-ts-module);
+    --color-ts-namespace: var(--light-color-ts-namespace);
+    --color-ts-enum: var(--light-color-ts-enum);
+    --color-ts-enum-member: var(--light-color-ts-enum-member);
+    --color-ts-variable: var(--light-color-ts-variable);
+    --color-ts-function: var(--light-color-ts-function);
+    --color-ts-class: var(--light-color-ts-class);
+    --color-ts-interface: var(--light-color-ts-interface);
+    --color-ts-constructor: var(--light-color-ts-constructor);
+    --color-ts-property: var(--light-color-ts-property);
+    --color-ts-method: var(--light-color-ts-method);
+    --color-ts-call-signature: var(--light-color-ts-call-signature);
+    --color-ts-index-signature: var(--light-color-ts-index-signature);
+    --color-ts-constructor-signature: var(--light-color-ts-constructor-signature);
+    --color-ts-parameter: var(--light-color-ts-parameter);
+    --color-ts-type-parameter: var(--light-color-ts-type-parameter);
+    --color-ts-accessor: var(--light-color-ts-accessor);
+    --color-ts-get-signature: var(--light-color-ts-get-signature);
+    --color-ts-set-signature: var(--light-color-ts-set-signature);
+    --color-ts-type-alias: var(--light-color-ts-type-alias);
 
-      --external-icon: var(--light-external-icon);
-      --color-scheme: var(--light-color-scheme);
+    --external-icon: var(--light-external-icon);
+    --color-scheme: var(--light-color-scheme);
   }
 }
 
