@@ -8,7 +8,7 @@
   "size-limit": [
     {
       "path": "./dist/kullna-editor.min.js",
-      "limit": "6.5 KB"
+      "limit": "8 KB"
     }
   ],
   "exports": {

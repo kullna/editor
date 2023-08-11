@@ -1,10 +1,10 @@
 # This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
 
-name: Kullna Editor CI
+name: Kullna PR Actions
 
 on:
-  push:
+  pull_request:
     branches: ['main']
     paths-ignore: ['**.md']
 
@@ -26,3 +26,6 @@ jobs:
           cache: 'npm'
           cache-dependency-path: './package-lock.json'
       - run: ./ci
+      - uses: andresz1/size-limit-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
