@@ -1,6 +1,13 @@
 ##.github/workflows/release.yml
 name: Release & Publish to NPM
 on: workflow_dispatch
+permissions:
+  actions: write
+  contents: write
+  pull-requests: write
+  statuses: write
+  pages: write
+  id-token: write
 jobs:
   release:
     runs-on: ubuntu-latest
