@@ -4,3 +4,6 @@ assets/**/* linguist-vendored
 ./**/*.js linguist-vendored
 ./**/*.cjs linguist-vendored
 ./**/*.html linguist-vendored
+./*.html linguist-vendored
+./*.js linguist-vendored
+./*.cjs linguist-vendored

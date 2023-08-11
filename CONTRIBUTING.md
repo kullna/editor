@@ -1,13 +1,4 @@
----
----
-
-<p align="center"><a href="https://editor.kullna.org/"><img src="https://www.kullna.org/brand/logo.svg" width="150"></a></p>
-<h1 align="center">@kullna/editor</h1>
-<h3 align="center">A small but feature-rich code editor for the web</h3>
-
-<p align="center"><a href="/">Home</a></p>
-
-# How to Contribute
+# Contributing
 
 We warmly welcome contributions in the form of bug reports, feature requests, and PRs.
 
@@ -51,34 +42,36 @@ open source.
 
 ## Getting Started
 
-1. Fork the repo on GitHub
-2. Clone the fork on your local machine
+### 1. Fork the repo on GitHub
+
+### 2. Clone the fork on your local machine
 
 ```bash
-git clone git://github.com/<your-name>/editor.git
+git clone git://github.com/<your-name>/editor.git && cd editor
 ```
 
-3. Create your feature branch
+### 3. Create your feature branch
+
+From the `main` (default) branch:
 
 ```bash
 git checkout -b <your-name>/my-new-feature
 ```
 
-4. Start the development environment
+### 4. Start the development environment
 
 ```bash
 npm install
 npm run start
 ```
 
-5. Make your changes
+When you run the `start` command, a browser window will open showing the contents of the `test.html`
+page.
 
-Temporarily change which file is loaded in `demo.html` from the CDN to: `dist/kullna-editor.esm.js`.
-
-You will find the relavant lines commented out in `demo.html`.
-
-This will allow you to test your changes on the demo page using a source-mapped esm that updates
+This will allow you to test your changes on the test page using a source-mapped esm that updates
 automatically as you change project files.
+
+### 5. Make your changes
 
 When you're ready to commit your changes, stage the files you have changed:
 
@@ -86,22 +79,93 @@ When you're ready to commit your changes, stage the files you have changed:
 git add <my-new-feature-file>
 ```
 
-6. Commit your changes
+See what files you have changed:
 
 ```bash
-git commit
+git status
 ```
 
-You may have to fix any errors that occur. In which case, repeat steps 5 and 6 until the commit
+### 6. Commit your changes
+
+```bash
+git commit -s
+```
+
+There are three things to note here
+
+#### Sign-offs Required
+
+First, you need to "sign-off" your commit. This indicates that you agree to the
+[Developer Certificate of Origin](https://developercertificate.org/). To do this, add the `-s` flag
+to your commit command. If you forget to do this, your PR will not be able to be merged.
+
+#### Verified Commits Only
+
+Second, your commits must be verified through signature verification. To do this, you must have a
+GPG key associated with your GitHub account and configured properly for git. If you have not done so
+already, you can follow the instructions in the
+[GitHub Commit Signature Verification Guide](https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification).
+
+Don't forget to include this in your shell profile:
+
+```bash
+export GPG_TTY=$(tty)
+```
+
+#### Linting and Formatting
+
+Your changes will be linted and formatted automatically when you commit. If you bypass the commit
+hook, your PR will not be able to be merged.
+
+If you want to run checks manually prior to comitting, you can do so with:
+
+```bash
+npm run lint
+```
+
+You may have to fix any errors that occur. In which case, repeat steps 5 and 6 until the `lint`
 succeeds.
 
-7. Push your changes to a new branch on your fork on GitHub
+#### Commit Messages
+
+We use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) for our commit
+messages. This allows us to automatically generate a changelog from our commit history.
+
+If you are new to Conventional Commits, please read the
+[Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/)
+
+If you are using VSCode, you can install the
+[Conventional Commits extension](https://marketplace.visualstudio.com/items?itemName=vivaxy.vscode-conventional-commits)
+If you are using a different editor, please install the appropriate Conventional Commits plugin for
+your editor.
+
+If you fail to follow the Conventional Commits specification, a commit hook will fail and you will
+not be able to commit your changes until you fix the commit message.
+
+> **5 Steps to Write Better Commit Messages**
+>
+> **Capitalization and Punctuation:** Conventional Commits requires all lowercase.
+>
+> **Type of Commit:** Specify the type of commit. You must specify the type of commit you are
+> making. Example – feat, fix, docs, style, refactor, test, chore, etc. As in: "feat: add dark mode
+> toggle".
+>
+> **Mood:** Use imperative mood in the subject line. Example – Add fix for dark mode toggle state.
+> Imperative mood gives the tone you are giving an order or request.
+>
+> **Length:** The first line should ideally be no longer than 50 characters, and the body should be
+> restricted to 72 characters. Content: Be direct, try to eliminate filler words and phrases in
+> these sentences (examples: though, maybe, I think, kind of).
+>
+> **Think like a journalist.** Who, what, when, where, why, and how.
+
+### 7. Push your changes to a new branch on your fork on GitHub
 
 ```bash
 git push origin <your-name>/my-new-feature
 ```
 
-8. Create a Pull Request on GitHub
+### 8. Create a Pull Request on GitHub
 
 A member of the team will review your PR and work with you to get it accepted. It will automatically
 be assigned to a reviewer. If you have any questions, please ask them in the PR comments.
@@ -119,21 +183,17 @@ We use [ESLint](https://eslint.org/) to lint our code.
 Both Prettier and ESLint will be run automatically when you commit your changes. If there are any
 errors, you will have to fix them before you can commit.
 
-## Commit Messages
+**Lint your Code:**
 
-We use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) for our commit
-messages. This allows us to automatically generate a changelog from our commit history.
+```bash
+npm run lint
+```
 
-If you are new to Conventional Commits, please read the
-[Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/)
+**Fix Lintter Errors in your Code:**
 
-If you are using VSCode, you can install the
-[Conventional Commits extension](https://marketplace.visualstudio.com/items?itemName=vivaxy.vscode-conventional-commits)
-If you are using a different editor, please install the appropriate Conventional Commits plugin for
-your editor.
-
-If you fail to follow the Conventional Commits specification, a commit hook will fail and you will
-not be able to commit your changes until you fix the commit message.
+```bash
+npm run lint:fix
+```
 
 ## Code of Conduct
 
@@ -167,9 +227,8 @@ Signed-off-by: Jane Doe <jane-doe@gmail.com>
 
 ---
 
-_The Kullna Editor source, artifacts, and website content are **Copyright (c) 2023 The Kullna
-Programming Language Project.** They are free to use and open-source under the terms of the
-[GNU Lesser General Public License](https://www.gnu.org/licenses/lgpl-3.0)._
+The Kullna Editor source, artifacts, and website content are **Copyright (c) 2023
+[The Kullna Programming Language Project](https://www.kullna.org/).**
 
-_Portions of this library are [Copyright (c) 2020 Anton Medvedev and others](NOTICE.md) and used
-under the terms of the MIT License._
+They are free to use and open-source under the terms of the
+[GNU Lesser General Public License](https://www.gnu.org/licenses/lgpl-3.0).

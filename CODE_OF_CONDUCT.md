@@ -1,12 +1,3 @@
----
----
-
-<p align="center"><a href="https://editor.kullna.org/"><img src="https://www.kullna.org/brand/logo.svg" width="150"></a></p>
-<h1 align="center">@kullna/editor</h1>
-<h3 align="center">A small but feature-rich code editor for the web</h3>
-
-<p align="center"><a href="/">Home</a></p>
-
 # Code of Conduct
 
 ## Our Pledge
@@ -47,9 +38,8 @@ This Code of Conduct is adapted from the
 
 ---
 
-_The Kullna Editor source, artifacts, and website content are **Copyright (c) 2023 The Kullna
-Programming Language Project.** They are free to use and open-source under the terms of the
-[GNU Lesser General Public License](https://www.gnu.org/licenses/lgpl-3.0)._
+The Kullna Editor source, artifacts, and website content are **Copyright (c) 2023
+[The Kullna Programming Language Project](https://www.kullna.org/).**
 
-_Portions of this library are [Copyright (c) 2020 Anton Medvedev and others](NOTICE.md) and used
-under the terms of the MIT License._
+They are free to use and open-source under the terms of the
+[GNU Lesser General Public License](https://www.gnu.org/licenses/lgpl-3.0).

@@ -11,8 +11,21 @@ export default [
       sourcemap: true
     },
     plugins: [
-      typescript(),
-      babel({extensions: ['.ts'], exclude: 'node_modules/**', babelHelpers: 'bundled'})
+      typescript({
+        tsconfigOverride: {
+          compilerOptions: {
+            sourceMap: true,
+            inlineSources: true
+          }
+        }
+      }),
+      babel({
+        extensions: ['.ts'],
+        exclude: 'node_modules/**',
+        babelHelpers: 'bundled',
+        inputSourceMap: true,
+        sourceMaps: 'both'
+      })
     ]
   },
   {
@@ -27,7 +40,11 @@ export default [
     },
     plugins: [
       typescript(),
-      babel({extensions: ['.ts'], exclude: 'node_modules/**', babelHelpers: 'bundled'}),
+      babel({
+        extensions: ['.ts'],
+        exclude: 'node_modules/**',
+        babelHelpers: 'bundled'
+      }),
       terser()
     ]
   }

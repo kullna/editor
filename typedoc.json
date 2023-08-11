@@ -1,0 +1,46 @@
+{
+  "entryPoints": ["./src/index.ts"],
+  "basePath": "./",
+  "excludeProtected": true,
+  "excludeInternal": true,
+  "excludePrivate": true,
+  "includeVersion": true,
+  "readme": "README.md",
+  "customCss": "./docs.css",
+  "sort": ["kind", "instance-first", "alphabetical"],
+  "visibilityFilters": {
+    "inherited": true,
+    "external": true,
+    "@alpha": true,
+    "@beta": true
+  },
+  "pluginPages": {
+    "source": "./",
+    "pages": [
+      {
+        "name": "Homepage",
+        "source": "README.md"
+      },
+      {
+        "name": "Quick Start",
+        "source": "QUICK_START.md"
+      },
+      {
+        "name": "Contributing",
+        "source": "CONTRIBUTING.md"
+      },
+      {
+        "name": "License",
+        "source": "LICENSE.md"
+      },
+      {
+        "name": "Notice",
+        "source": "NOTICE.md"
+      },
+      {
+        "name": "Code of Conduct",
+        "source": "CODE_OF_CONDUCT.md"
+      }
+    ]
+  }
+}

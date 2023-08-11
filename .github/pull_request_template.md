@@ -1,12 +1,13 @@
-_Replace this with a brief summary of the functional change in the PR. All pull requests **must** have an associated [GitHub Issue](https://github.com/kullna/editor/issues/new). Please complete the issue list below. Use the keyword `Closes ` before any issues this PR closes._
+_Replace this with a summary your change in the PR. All pull requests **must** have an associated
+[GitHub Issue](https://github.com/kullna/editor/issues/new). Please complete the issue list below.
+Use the keyword `Closes ` before any issues this PR closes._
+
+- https://www.conventionalcommits.org/en/v1.0.0/
+- https://www.freecodecamp.org/news/how-to-write-better-git-commit-messages/
 
 **Github Issue List: ** _e.x.: #(issue1), closes #(issue2)_
 
-## Details
-
-_A summary of the mechanics of the change in the code, and, if necessary, a more detailed summary of the functional change. Please provide any details reviewers and future maintainers may be interested to know about your change._
-
-## Pre-Review Checklist:
+## Developer Certificate of Origin
 
 ```
 Developer Certificate of Origin
@@ -46,4 +47,5 @@ By making a contribution to this project, I certify that:
 ```
 
 - [ ] I `<Signature>` agree to the **Developer Certificate of Origin**
-- [ ] I have reviewed the License Agreement at [LICENCE.md](https://github.com/kullna/editor/blob/main/LICENSE.md)
+- [ ] I have reviewed the License Agreement at
+      [LICENSE.md](https://github.com/kullna/editor/blob/main/LICENSE.md)

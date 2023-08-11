@@ -7,25 +7,32 @@ jobs:
     steps:
       - name: Checkout source code
         uses: actions/checkout@v2
-      - name: Install the dependencies
-        run: npm install
-      - name: Initialise the NPM config
-        run: npm config set //registry.npmjs.org/:_authToken $NPM_TOKEN
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - name: Initialize Git user
+      - run: ./ci
+      - run: ./website
+      - name: Prepate git remote
+        run: |
+          git remote set-url origin git@github.com:kullna/editor.git
+      - name: Prepate for Auth with GitHub to create release
         run: |
           git config --global user.email "StevenEWright@users.noreply.github.com"
           git config --global user.name "Steven E Wright"
-      - name: Change git remote to use SSH
-        run: |
-          git remote set-url origin git@github.com:kullna/editor.git
-      - name: Attach SSH key
+      - name: Prepare Git to use SSH Key
         uses: webfactory/ssh-agent@v0.5.4
         with:
           ssh-private-key: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+      - name: Prepare for Auth with NPM
+        run: npm config set //registry.npmjs.org/:_authToken $NPM_TOKEN
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Run release
         run: npm run release --ci
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: './docs/'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
