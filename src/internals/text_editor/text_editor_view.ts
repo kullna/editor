@@ -242,7 +242,7 @@ export class TextEditorView {
     }
     this._formattedDisplay.style.inset = this.insetWithLeading(
       `-${this.element.scrollTop}px`,
-      `calc(${(this._dir == 'ltr' ? -1 : 1) * this.element.scrollLeft}px + ${this._gutterWidth})`
+      `calc(${(this._dir === 'ltr' ? -1 : 1) * this.element.scrollLeft}px + ${this._gutterWidth})`
     );
   }
 
