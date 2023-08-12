@@ -40,7 +40,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. */
  * 3. **{@link Processors}**:
  *    - {@link Processors.InputProcessor}: Processes the editor's input.
  *    - {@link Processors.DefaultProcessors}: Contains default input processors.
- * 4. **{@link Text} Management**:
  *    - {@link Text.TextDocument}: Represents the editor's text.
  *    - {@link Text.TextEditorViewKeyboardEvent}: Represents the editor's keyboard events.
  *

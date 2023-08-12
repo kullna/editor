@@ -212,6 +212,7 @@ function createHighlightElement(opts: GutterOptions): HTMLElement {
   highlight.style.position = 'absolute';
   highlight.style.left = '0px';
   highlight.style.right = '0px';
+  highlight.style.zIndex = '99';
   highlight.innerHTML = '&nbsp;';
   return highlight;
 }
@@ -234,6 +235,7 @@ function createGutterElement(opts: GutterOptions): HTMLElement {
 
   gutter.style.position = 'absolute';
   gutter.style.top = '0px';
+  gutter.style.zIndex = '50';
   gutter.style.bottom = '0px';
   if (opts.dir === 'ltr') {
     gutter.style.left = '0px';

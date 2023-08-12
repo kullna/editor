@@ -68,7 +68,7 @@
         box-shadow:
           rgba(0, 0, 0, 0.4) 0px 2px 4px,
           rgba(0, 0, 0, 0.3) 0px 7px 13px -3px,
-          rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+          var(--sd-yellow) 0px -5px 0px;
         font-family: 'KawkabMonoRegular', 'Source Code Pro', monospace;
         font-size: 12px;
         font-weight: 400;
@@ -135,7 +135,7 @@
           ><img src="https://www.kullna.org/brand/logo.svg" width="150"
         /></a>
       </p>
-      <h1 align="center">@kullna/editor</h1>
+      <h1 align="center">@kullna/editor Demos</h1>
       <h3 align="center">A small but feature-rich code editor for the web</h3>
       <p align="center"><a href="/">Home</a></p>
       <hr />
@@ -156,13 +156,13 @@
     </main>
 
     <!-- For local testing, comment this: -->
-    <!-- <script src="https://cdn.jsdelivr.net/npm/@kullna/editor/dist/kullna-editor.min.js"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/@kullna/editor/dist/kullna-editor.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/highlight.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
 
     <script type="module">
       // For local testing, uncomment this:
-      import * as KullnaEditor from './dist/kullna-editor.esm.js';
+      // import * as KullnaEditor from './dist/kullna-editor.esm.js';
 
       function demoWithOptions(parentSelector, id, titleText, options, defaultValue) {
         const parent = document.querySelector(parentSelector);
@@ -214,9 +214,7 @@
           `<div id="editor"><\/div>
 ...
 <script>
-  const editorElement = document.querySelector('#editor')
-
-  const editor = KullnaEditor.createEditor(editorElement, {
+  const editor = KullnaEditor.createEditor('#editor', {
     language: 'javascript',
     highlight: hljs.highlightElement,
     gutter: {

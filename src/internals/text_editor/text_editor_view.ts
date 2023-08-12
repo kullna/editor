@@ -76,8 +76,17 @@ export class TextEditorView {
     return this._workingDocument;
   }
   set cachedDocument(document: TextDocument) {
-    this._workingDocument = document;
+    if (this._workingDocument.strictEquals(document)) return;
+
+    const contentChanged = !this._workingDocument.perceptuallyEquals(document);
+    this.bridge.writeSelection(document);
     this.setDocumentUnchecked(document);
+    this._workingDocument = document;
+
+    if (contentChanged) {
+      this.listener.contentChanged();
+    }
+    this.listener.selectionChanged();
   }
   private readonly bridge: SelectionBridge;
 
@@ -209,7 +218,7 @@ export class TextEditorView {
       this._formattedDisplay.setAttribute('dir', dir);
     }
     this._dir = dir;
-    this.updateGutterWidth();
+    this.updateDisplayStyles();
   }
 
   private _gutterWidth: string = '55px';
@@ -218,18 +227,25 @@ export class TextEditorView {
   }
   set gutterWidth(width: string) {
     this._gutterWidth = width;
-    this.updateGutterWidth();
+    this.updateDisplayStyles();
   }
 
-  /** Updates the gutter width. */
-  private updateGutterWidth(): void {
-    if (this.element) {
-      if (this._dir === 'ltr') {
-        this.element.style.inset = `0px 0px 0px ${this._gutterWidth}`;
-      } else {
-        this.element.style.inset = `0px ${this._gutterWidth} 0px 0px`;
-      }
-      this._formattedDisplay.style.inset = this.element.style.inset;
+  private updateDisplayStyles(updateEditor: boolean = true): void {
+    if (!this.element) return;
+    if (updateEditor) {
+      this.element.style.inset = this.insetWithLeading('0px', this._gutterWidth);
+    }
+    this._formattedDisplay.style.inset = this.insetWithLeading(
+      `-${this.element.scrollTop}px`,
+      `calc(-${this.element.scrollLeft}px + ${this._gutterWidth})`
+    );
+  }
+
+  private insetWithLeading(top: string, leading: string) {
+    if (this._dir === 'ltr') {
+      return `${top} 0px 0px ${leading}`;
+    } else {
+      return `${top} ${leading} 0px 0px`;
     }
   }
 
@@ -303,17 +319,20 @@ export class TextEditorView {
     // editor is above the highlighted element in the DOM, so that
     // the editor can capture the user's input.
     const editor = highlighted.cloneNode() as HTMLElement;
+    highlighted.style.overflow = 'initial';
+    highlighted.style.zIndex = '0';
     this.element = editor;
     editor.setAttribute('contenteditable', 'plaintext-only');
     if (editor.contentEditable !== 'plaintext-only') {
       editor.setAttribute('contenteditable', 'true');
     }
     editor.style.color = 'transparent';
+    editor.style.zIndex = '100';
     editor.style.caretColor = 'white';
     parent.appendChild(editor);
 
     this.language = 'text';
-    this.updateGutterWidth();
+    this.updateDisplayStyles();
 
     if (!this.element) {
       throw new Error('Could not create editor element');
@@ -341,7 +360,7 @@ export class TextEditorView {
       }
       if (!this.element)
         throw new Error('Unexpectedly, No element. Did you forget to call destroy()?');
-      this._formattedDisplay.style.top = `-${this.element.scrollTop}px`;
+      this.updateDisplayStyles(false);
       this.listener.scroll(this.element);
     }, 1000 / 60);
 
