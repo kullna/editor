@@ -12,7 +12,7 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v2
       - run: ./ci
-      - run: ./website
+      - run: ./website gen
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
