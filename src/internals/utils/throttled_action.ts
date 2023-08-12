@@ -26,7 +26,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. */
  */
 export class ThrottledAction {
   private timeout?: number;
-  private triggered: boolean = false;
+  private shouldExecuteAfterDelay: boolean = false;
 
   constructor(
     private readonly action: () => void,
@@ -34,23 +34,27 @@ export class ThrottledAction {
   ) {}
 
   trigger() {
-    if (this.triggered) return;
     if (this.timeout) {
-      this.triggered = true;
-      return;
-    }
-    this.executeAction();
-    this.timeout = window.setTimeout(() => {
+      // If there's an active timeout, it means we're within the delay window.
+      // Mark that we should execute the action again after the delay.
+      this.shouldExecuteAfterDelay = true;
+    } else {
+      // If there's no active timeout, execute the action immediately and start a delay.
       this.executeAction();
-    }, this.delay);
+      this.timeout = window.setTimeout(() => {
+        // After the delay, check if there was another trigger during the delay window.
+        if (this.shouldExecuteAfterDelay) {
+          this.executeAction();
+        }
+        // Reset the state.
+        clearTimeout(this.timeout);
+        this.timeout = undefined;
+        this.shouldExecuteAfterDelay = false;
+      }, this.delay);
+    }
   }
 
   private executeAction() {
-    this.triggered = false;
-    if (this.timeout) {
-      clearTimeout(this.timeout);
-      this.timeout = undefined;
-    }
     this.action();
   }
 }

@@ -77,6 +77,7 @@ export class TextEditorView {
   }
   set cachedDocument(document: TextDocument) {
     this._workingDocument = document;
+    this.setDocumentUnchecked(document);
   }
   private readonly bridge: SelectionBridge;
 
@@ -95,12 +96,11 @@ export class TextEditorView {
     if (!this._lastPassedDocument.strictEquals(document)) {
       if (!this._lastPassedDocument.perceptuallyEquals(document)) {
         if (this.element) {
-          // const safeString = window.document.createTextNode(document.text.replace(/\r\n/g, '\n'));
-          // this.element.textContent = safeString.textContent;
-
+          const safeString = window.document.createTextNode(document.text.replace(/\r\n/g, '\n'));
+          this.element.textContent = safeString.textContent;
           this.invokeHighlighter();
         }
-        // this.bridge.writeSelection(document);
+        this.bridge.writeSelection(document);
         if (Package.environment === 'DEVELOPMENT') {
           // skipcq: JS-0002: Avoid console
           console.log(' ⚡ Content Changed Event');
@@ -309,7 +309,7 @@ export class TextEditorView {
       editor.setAttribute('contenteditable', 'true');
     }
     editor.style.color = 'transparent';
-    editor.style.caretColor = 'inherit';
+    editor.style.caretColor = 'white';
     parent.appendChild(editor);
 
     this.language = 'text';
