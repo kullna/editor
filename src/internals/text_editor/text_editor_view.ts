@@ -230,6 +230,11 @@ export class TextEditorView {
     this.updateDisplayStyles();
   }
 
+  /**
+   * Updates the display styles for the editor and the formatted display.
+   *
+   * @param updateEditor Whether or not to update the editor's styles.
+   */
   private updateDisplayStyles(updateEditor: boolean = true): void {
     if (!this.element) return;
     if (updateEditor) {
@@ -241,6 +246,14 @@ export class TextEditorView {
     );
   }
 
+  /**
+   * Returns the inset string for the given top and leading values. This routine takes into account
+   * the direction of the editor. The parameters are CSS values, so they should include units.
+   *
+   * @param top The top value.
+   * @param leading The leading value.
+   * @returns The inset string.
+   */
   private insetWithLeading(top: string, leading: string) {
     if (this._dir === 'ltr') {
       return `${top} 0px 0px ${leading}`;
