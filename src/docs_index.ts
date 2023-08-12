@@ -14,6 +14,18 @@ GNU General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
-/** @packageDocumentation # Text Editing */
-export {TextDocument} from './text_document';
-export {type TextEditorViewKeyboardEvent as TextEditorViewKeyboardEvent} from './keyboard_event';
+/**
+ * @packageDocumentation # @kullna/editor Documentation (Dev Version)
+ *
+ * Welcome to the documentation for the Kullna Editor!
+ *
+ * Please see: [Test Page](/test.html)
+ */
+export {Options} from './options';
+export {KullnaEditor} from './kullna_editor';
+export {EditorOptions} from './internals/editor_options';
+export {Editor} from './internals/editor';
+export {UndoRedoManager} from './internals/undo_redo_manager';
+export * as Text from './internals/text_editor/docs_index';
+export * as Gutters from './internals/gutter/docs_index';
+export * as Processors from './internals/pipeline/docs_index';

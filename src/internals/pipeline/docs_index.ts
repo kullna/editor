@@ -14,6 +14,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
-/** @packageDocumentation # Text Editing */
-export {TextDocument} from './text_document';
-export {type TextEditorViewKeyboardEvent as TextEditorViewKeyboardEvent} from './keyboard_event';
+/** @packageDocumentation # Input Processors (Dev Version) */
+export {type InputProcessor, type InputProcessorArgs} from './input_processor';
+export {type NewlineProcessorOptions, newlineProcessor} from './newline_processor';
+export {type TabProcessorOptions, tabProcessor} from './tab_processor';
+export {type bracketProcessor} from './bracket_processor';
+
+export {DefaultProcessors} from './index';

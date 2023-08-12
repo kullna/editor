@@ -14,7 +14,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
-import {TextDocument, TextEditorKeyboardEvent} from './text_editor';
+import {TextDocument, TextEditorViewKeyboardEvent} from './text_editor';
 import {type InputProcessor} from './pipeline';
 import {Gutter} from './gutter/gutter';
 import {InputProcessorArgs} from './pipeline/input_processor';
@@ -112,7 +112,7 @@ export class Editor
 
   // ---------------- Editor ----------------
 
-  /** @inheritdoc */
+  /** @inheritDoc */
   get spellcheck(): boolean {
     return this.view.spellchecking;
   }
@@ -120,7 +120,7 @@ export class Editor
     this.view.spellchecking = spellcheck;
   }
 
-  /** @inheritdoc */
+  /** @inheritDoc */
   get language(): string {
     return this.view.language;
   }
@@ -128,7 +128,7 @@ export class Editor
     this.view.language = language;
   }
 
-  /** @inheritdoc */
+  /** @inheritDoc */
   get dir(): 'ltr' | 'rtl' {
     return this.view.dir;
   }
@@ -139,7 +139,7 @@ export class Editor
     }
   }
 
-  /** @inheritdoc */
+  /** @inheritDoc */
   get highlightedLine(): number {
     return this.gutter ? this.gutter.highlightedLine : -1;
   }
@@ -149,7 +149,7 @@ export class Editor
     }
   }
 
-  /** @inheritdoc */
+  /** @inheritDoc */
   invalidateGutterLine(line: number): void {
     if (this.gutter) {
       this.gutter.updateLineNumber(line);
@@ -170,61 +170,61 @@ export class Editor
     this.notifyPotentiallyChanged(true);
   }
 
-  /** @inheritdoc */
+  /** @inheritDoc */
   onUpdate(callback: (code: string) => void): void {
     this.options.onUpdate = callback;
   }
 
-  /** @inheritdoc */
+  /** @inheritDoc */
   onSelectionFocusChanged(callback: (document: TextDocument) => void): void {
     this.options.onSelectionFocusChanged = callback;
   }
 
-  /** @inheritdoc */
+  /** @inheritDoc */
   destroy(): void {
     this.view.destroy();
   }
 
   // ---------------- EditorStateSerializable ----------------
 
-  /** @inheritdoc */
+  /** @inheritDoc */
   currentUndoRedoState(): TextDocument {
     return this.view.cachedDocument;
   }
 
-  /** @inheritdoc */
+  /** @inheritDoc */
   // skipcq: JS-0105: Class methods should utilize this
   undoRedoStatesAreEquivalent(a: TextDocument, b: TextDocument): boolean {
     return a.perceptuallyEquals(b);
   }
 
-  /** @inheritdoc */
+  /** @inheritDoc */
   restoreUndoRedoState(document: TextDocument) {
     this.view.setDocumentUnchecked(document);
   }
 
   // ---------------- EditorInputEventHandler ----------------
 
-  /** @inheritdoc */
+  /** @inheritDoc */
   selectionChanged(): void {
     if (this.options.onSelectionFocusChanged) {
       this.options.onSelectionFocusChanged(this.view.cachedDocument);
     }
   }
 
-  /** @inheritdoc */
+  /** @inheritDoc */
   contentChanged(): void {
     this.notifyPotentiallyChanged();
   }
 
-  /** @inheritdoc */
+  /** @inheritDoc */
   scroll(element: HTMLElement) {
     if (!this.gutter) return;
     // this.gutter.element.style.top = `-${element.scrollTop}px`;
     this.gutter.setScrollTop(element.scrollTop);
   }
 
-  /** @inheritdoc */
+  /** @inheritDoc */
   cut(event: ClipboardEvent): void {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const originalEvent = (event as any).originalEvent ?? event;
@@ -232,7 +232,7 @@ export class Editor
     this.view.setDocumentUnchecked(this.view.cachedDocument.deleteSelection());
   }
 
-  /** @inheritdoc */
+  /** @inheritDoc */
   paste(event: ClipboardEvent): void {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const originalEvent = (event as any).originalEvent ?? event;
@@ -241,28 +241,28 @@ export class Editor
     this.view.cachedDocument = this.view.cachedDocument.insertText(text, true, true);
   }
 
-  /** @inheritdoc */
-  keydown(event: TextEditorKeyboardEvent): boolean {
+  /** @inheritDoc */
+  keydown(event: TextEditorViewKeyboardEvent): boolean {
     if (this.options.keydownPipeline) {
       return this.processPipeline(this.options.keydownPipeline, {handled: false, event});
     }
     return false;
   }
 
-  /** @inheritdoc */
-  keyup(event: TextEditorKeyboardEvent): boolean {
+  /** @inheritDoc */
+  keyup(event: TextEditorViewKeyboardEvent): boolean {
     if (this.options.keyupPipeline) {
       return this.processPipeline(this.options.keyupPipeline, {handled: false, event});
     }
     return false;
   }
 
-  /** @inheritdoc */
+  /** @inheritDoc */
   undo(): void {
     this.undoRedoManager.undo();
   }
 
-  /** @inheritdoc */
+  /** @inheritDoc */
   redo(): void {
     this.undoRedoManager.redo();
   }

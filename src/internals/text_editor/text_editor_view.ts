@@ -17,8 +17,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 import {TextDocument} from './text_document';
 import {Package} from '../../package';
 import {type TextEditorViewEventHandler} from './event_handler';
-import {TextEditorKeyboardEvent} from './keyboard_event';
+import {TextEditorViewKeyboardEvent} from './keyboard_event';
 import {SelectionBridge} from './selection_bridge';
+import {ThrottledAction} from '../utils/throttled_action';
 
 /**
  * The TextEditorView class provides a simple API for managing the state of a browser-based text
@@ -40,10 +41,10 @@ import {SelectionBridge} from './selection_bridge';
  * Internally, the DOM events are handled by the {@link TextEditorViewEventHandler} class. This class
  * is responsible for handling DOM events and translating them into higher-level events that are
  * easier to reason about. For example, the `keydown` event is translated into a
- * {@link TextEditorKeyboardEvent} object, which contains information about the key that was pressed,
- * whether the shift key was pressed, etc. Clients of a TextEditorView must supply an event handler
- * to handle these events, and the event handler should use our APIs to modify the state of the
- * TextDocument if needed.
+ * {@link TextEditorViewKeyboardEvent} object, which contains information about the key that was
+ * pressed, whether the shift key was pressed, etc. Clients of a TextEditorView must supply an event
+ * handler to handle these events, and the event handler should use our APIs to modify the state of
+ * the TextDocument if needed.
  *
  * Also internally, The {@link TextEditorView} class is responsible for rendering the text editor and
  * mapping the state of the text editor to the DOM.
@@ -69,13 +70,12 @@ import {SelectionBridge} from './selection_bridge';
  * - https://developer.mozilla.org/en-US/docs/Web/API/Range
  */
 export class TextEditorView {
-  // private _previousDocument?: TextDocument;
+  // TODO: Move this to the editor class.
   private _workingDocument: TextDocument;
   get cachedDocument(): TextDocument {
     return this._workingDocument;
   }
   set cachedDocument(document: TextDocument) {
-    this.domDocument = document;
     this._workingDocument = document;
   }
   private readonly bridge: SelectionBridge;
@@ -95,17 +95,12 @@ export class TextEditorView {
     if (!this._lastPassedDocument.strictEquals(document)) {
       if (!this._lastPassedDocument.perceptuallyEquals(document)) {
         if (this.element) {
-          if (Package.environment === 'DEVELOPMENT') {
-            // skipcq: JS-0002: Avoid console
-            console.log(' 🎨 Highlighting');
-          }
+          // const safeString = window.document.createTextNode(document.text.replace(/\r\n/g, '\n'));
+          // this.element.textContent = safeString.textContent;
 
-          const safeString = window.document.createTextNode(document.text.replace(/\r\n/g, '\n'));
-          this.element.textContent = safeString.textContent;
-
-          this.highlightElement(this.element);
+          this.invokeHighlighter();
         }
-        this.bridge.writeSelection(document);
+        // this.bridge.writeSelection(document);
         if (Package.environment === 'DEVELOPMENT') {
           // skipcq: JS-0002: Avoid console
           console.log(' ⚡ Content Changed Event');
@@ -124,38 +119,8 @@ export class TextEditorView {
   }
 
   /**
-   * Gets or sets the DOM's copy of the document.
-   *
-   * This is an expensive operation and should be avoided if possible.
-   *
-   * @returns The DOM's copy of the document.
-   */
-  get domDocument(): TextDocument {
-    return this.updateLastKnownDOMState();
-  }
-  set domDocument(document: TextDocument) {
-    this._workingDocument = document;
-
-    if (!this._lastPassedDocument.strictEquals(document)) {
-      if (!this._lastPassedDocument.perceptuallyEquals(document)) {
-        if (Package.environment === 'DEVELOPMENT') {
-          // skipcq: JS-0002: Avoid console
-          console.log(' ⚡ Content Changed Event');
-        }
-        this.listener.contentChanged();
-      }
-      if (Package.environment === 'DEVELOPMENT') {
-        // skipcq: JS-0002: Avoid console
-        console.log(' ⚡ Selection Changed Event');
-      }
-      this.listener.selectionChanged();
-    }
-    this._lastPassedDocument = document;
-    this.setDocumentUnchecked(document);
-  }
-
-  /**
-   * Sets the document without performing any callbacks.
+   * Sets the document without performing any content-change-related callbacks. (Note that we still
+   * invoke the rendering/highlighting logic.)
    *
    * @param document The new working document.
    */
@@ -183,19 +148,23 @@ export class TextEditorView {
     const safeString = window.document.createTextNode(document.text.replace(/\r\n/g, '\n'));
     this.element.textContent = safeString.textContent;
 
-    if (Package.environment === 'DEVELOPMENT') {
-      // skipcq: JS-0002: Avoid console
-      console.log(' 🎨 Highlighting');
-    }
-
-    this.highlightElement(this.element);
     this.bridge.writeSelection(document);
+    this.invokeHighlighter();
     this._lastDOMDocument = document;
   }
 
   /** The function that will be called when the content of the text editor changes. */
   // skipcq: JS-0105, JS-0321: No "this", no empty function.
   highlightElement: (element: HTMLElement) => void = () => {};
+  private readonly _formattedDisplay: HTMLElement;
+  private readonly _throttledHighlighter: ThrottledAction;
+  private invokeHighlighter() {
+    if (Package.environment === 'DEVELOPMENT') {
+      // skipcq: JS-0002: Avoid console
+      console.log(' 🎨 Highlighting Requested');
+    }
+    this._throttledHighlighter.trigger();
+  }
 
   private _language: string = 'text';
   get language(): string {
@@ -203,7 +172,8 @@ export class TextEditorView {
   }
   set language(lang: string) {
     if (this.element) {
-      this.element?.classList.replace(`language-${this._language}`, `language-${lang}`);
+      this.element.classList.replace(`language-${this._language}`, `language-${lang}`);
+      this._formattedDisplay.classList.replace(`language-${this._language}`, `language-${lang}`);
     }
     this._language = lang;
   }
@@ -220,8 +190,10 @@ export class TextEditorView {
       this.element.setAttribute('autocorrect', spellcheck ? 'on' : 'off');
       if (!spellcheck) {
         this.element.setAttribute('lang', 'klingon');
+        this._formattedDisplay.setAttribute('lang', 'klingon');
       } else {
         this.element.removeAttribute('lang');
+        this._formattedDisplay.removeAttribute('lang');
       }
     }
     this._spellchecking = spellcheck;
@@ -234,6 +206,7 @@ export class TextEditorView {
   set dir(dir: 'ltr' | 'rtl') {
     if (this.element) {
       this.element.setAttribute('dir', dir);
+      this._formattedDisplay.setAttribute('dir', dir);
     }
     this._dir = dir;
     this.updateGutterWidth();
@@ -256,6 +229,7 @@ export class TextEditorView {
       } else {
         this.element.style.inset = `0px ${this._gutterWidth} 0px 0px`;
       }
+      this._formattedDisplay.style.inset = this.element.style.inset;
     }
   }
 
@@ -290,15 +264,12 @@ export class TextEditorView {
   }
 
   private element?: HTMLElement;
-  get host(): HTMLElement {
-    if (!this.element) {
-      throw new Error('Not attached to a view.');
-    }
-    return this.element;
-  }
+
+  /** Invoke to inform clients that the editor scrolled. */
+  private readonly _throttledScroller: ThrottledAction;
 
   /**
-   * Creates a new `EditorEventSource`.
+   * Creates a new `TextEditorView`.
    *
    * @param window The window object.
    * @param parent The host element.
@@ -309,22 +280,36 @@ export class TextEditorView {
     parent: HTMLElement,
     private readonly listener: TextEditorViewEventHandler
   ) {
-    // Construct the editor element
-    const editor = document.createElement('div');
+    // The highlighted element is the one that is visible to the user.
+    // It is produced by the highlighter. Before the highlighter runs,
+    // we populate the text content of the highlighted element with the
+    // text content of the working document.
+    const highlighted = document.createElement('div');
+    this._formattedDisplay = highlighted;
+    highlighted.style.outline = 'none';
+    highlighted.style.overflowWrap = 'break-word';
+    highlighted.style.overflowY = 'auto';
+    highlighted.style.whiteSpace = 'pre';
+    highlighted.style.top = '0px';
+    highlighted.style.right = '0px';
+    highlighted.style.left = '0px';
+    highlighted.style.bottom = '0px';
+    highlighted.style.position = 'absolute';
+    parent.appendChild(highlighted);
+
+    // The editor is the actual contenteditable element that the user
+    // interacts with. It is hidden from the user, and is used to
+    // capture the user's input. Note that it's important that the
+    // editor is above the highlighted element in the DOM, so that
+    // the editor can capture the user's input.
+    const editor = highlighted.cloneNode() as HTMLElement;
     this.element = editor;
     editor.setAttribute('contenteditable', 'plaintext-only');
     if (editor.contentEditable !== 'plaintext-only') {
       editor.setAttribute('contenteditable', 'true');
     }
-    editor.style.outline = 'none';
-    editor.style.overflowWrap = 'break-word';
-    editor.style.overflowY = 'auto';
-    editor.style.whiteSpace = 'pre';
-    editor.style.top = '0px';
-    editor.style.right = '0px';
-    editor.style.left = '0px';
-    editor.style.bottom = '0px';
-    editor.style.position = 'absolute';
+    editor.style.color = 'transparent';
+    editor.style.caretColor = 'inherit';
     parent.appendChild(editor);
 
     this.language = 'text';
@@ -337,30 +322,28 @@ export class TextEditorView {
     this.bridge = new SelectionBridge(this.element);
     this._workingDocument = this.updateLastKnownDOMState();
 
-    this.selectionChangeListener = () => {
-      if (!this.focused) return;
-      this.updateLastKnownDOMState();
-    };
-    this.window.document.addEventListener('selectionchange', this.selectionChangeListener);
+    this._throttledHighlighter = new ThrottledAction(() => {
+      if (Package.environment === 'DEVELOPMENT') {
+        // skipcq: JS-0002: Avoid console
+        console.log(' 🎨 Highlight Sync');
+      }
+      const safeString = window.document.createTextNode(
+        this._workingDocument.text.replace(/\r\n/g, '\n')
+      );
+      this._formattedDisplay.textContent = safeString.textContent;
+      this.highlightElement(this._formattedDisplay);
+    }, 1000 / 60);
 
-    this.on('scroll', this.element, () => {
+    this._throttledScroller = new ThrottledAction(() => {
+      if (Package.environment === 'DEVELOPMENT') {
+        // skipcq: JS-0002: Avoid console
+        console.log(' 🎨 Scroll Sync');
+      }
       if (!this.element)
         throw new Error('Unexpectedly, No element. Did you forget to call destroy()?');
+      this._formattedDisplay.style.top = `-${this.element.scrollTop}px`;
       this.listener.scroll(this.element);
-    });
-
-    this.on('keydown', this.element, (event: KeyboardEvent) => {
-      this.handleKeyDown(event);
-    });
-
-    this.on('keyup', this.element, event => {
-      if (!this.focused) return;
-      if (event.defaultPrevented) return;
-      if (event.isComposing) return;
-
-      const editorEvent = new TextEditorKeyboardEvent(event);
-      this.listener.keyup(editorEvent);
-    });
+    }, 1000 / 60);
 
     this.on('focus', this.element, () => {
       this.focused = true;
@@ -370,11 +353,55 @@ export class TextEditorView {
       this.focused = false;
     });
 
+    this.selectionChangeListener = () => {
+      if (!this.focused) return;
+      this.updateLastKnownDOMState();
+    };
+    this.window.document.addEventListener('selectionchange', this.selectionChangeListener);
+
+    this.on('scroll', this.element, () => {
+      this._throttledScroller.trigger();
+    });
+
+    this.on('keydown', this.element, (event: KeyboardEvent) => {
+      if (!this.focused) return;
+      if (event.defaultPrevented) return;
+      if (event.isComposing) return;
+
+      const editorEvent = new TextEditorViewKeyboardEvent(event);
+
+      if (editorEvent.isUndo) {
+        event.preventDefault();
+        event.stopPropagation();
+        this.listener.undo();
+      } else if (editorEvent.isRedo) {
+        event.preventDefault();
+        event.stopPropagation();
+        this.listener.redo();
+      } else if (this.listener.keydown(editorEvent)) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    });
+
+    this.on('input', this.element, () => {
+      if (!this.focused) return;
+      this.updateLastKnownDOMState();
+    });
+
+    this.on('keyup', this.element, event => {
+      if (!this.focused) return;
+      if (event.defaultPrevented) return;
+      if (event.isComposing) return;
+
+      const editorEvent = new TextEditorViewKeyboardEvent(event);
+      this.listener.keyup(editorEvent);
+    });
+
     this.on('cut', this.element, event => {
       if (!this.focused) return;
       if (event.defaultPrevented) return;
       event.preventDefault();
-
       this.listener.cut(event);
     });
 
@@ -382,39 +409,8 @@ export class TextEditorView {
       if (!this.focused) return;
       if (event.defaultPrevented) return;
       event.preventDefault();
-
       this.listener.paste(event);
     });
-  }
-
-  /**
-   * Handles a keydown event.
-   *
-   * @param event The event to handle.
-   */
-  private handleKeyDown(event: KeyboardEvent): void {
-    if (!this.focused) return;
-    if (event.defaultPrevented) return;
-    if (event.isComposing) return;
-
-    const editorEvent = new TextEditorKeyboardEvent(event);
-
-    if (editorEvent.isUndo) {
-      event.preventDefault();
-      event.stopPropagation();
-
-      this.listener.undo();
-    } else if (editorEvent.isRedo) {
-      event.preventDefault();
-      event.stopPropagation();
-
-      this.listener.redo();
-    } else if (this.listener.keydown(editorEvent)) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-
-    // Several control keys fall through to the default behavior here.
   }
 
   /** Removes all event listeners from the DOM element. */

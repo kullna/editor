@@ -14,6 +14,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
-/** @packageDocumentation # Text Editing */
+/** @packageDocumentation # Text Editing (Dev Version) */
 export {TextDocument} from './text_document';
 export {type TextEditorViewKeyboardEvent as TextEditorViewKeyboardEvent} from './keyboard_event';
+export {type TextEditorViewEventHandler} from './event_handler';
+export {SelectionBridge} from './selection_bridge';
+export {TextEditorView} from './text_editor_view';

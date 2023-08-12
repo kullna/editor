@@ -14,7 +14,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
-import {type TextDocument, type TextEditorKeyboardEvent} from '../text_editor';
+import {type TextDocument, type TextEditorViewKeyboardEvent} from '../text_editor';
 
 /**
  * # Input Processor
@@ -63,5 +63,5 @@ export interface InputProcessorArgs {
    *   building an input processor that needs to know what key was pressed, you can access that
    *   information here.
    */
-  event: TextEditorKeyboardEvent;
+  event: TextEditorViewKeyboardEvent;
 }

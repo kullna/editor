@@ -2,7 +2,7 @@
 
 rm -rf ./docs/
 mkdir ./docs/
-npm run document:gen
+npm run document:$1
 cp ./*.html ./docs/
 cp ./*.css ./docs/
 cp -r ./assets/* ./docs/assets

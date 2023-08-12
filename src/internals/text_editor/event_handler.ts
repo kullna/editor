@@ -14,7 +14,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
-import {type TextEditorKeyboardEvent} from './keyboard_event';
+import {type TextEditorViewKeyboardEvent} from './keyboard_event';
 
 /**
  * When an `EditorDOMEventHandler` categorizes an event from the DOM, it will call the corresponding
@@ -29,8 +29,6 @@ import {type TextEditorKeyboardEvent} from './keyboard_event';
  * The method names are all imperative verbs because they are intended to be commands to the editor.
  */
 export interface TextEditorViewEventHandler {
-  /** ========= Clipboard Events ========= */
-
   /**
    * Called when the user presses the "cut" key combination.
    *
@@ -45,7 +43,11 @@ export interface TextEditorViewEventHandler {
    */
   paste(event: ClipboardEvent): void;
 
-  /* ========= Special Keyboard Events ========= */
+  /** Called when the user presses the "undo" key combination. */
+  undo(): void;
+
+  /** Called when the user presses the "redo" key combination. */
+  redo(): void;
 
   /**
    * Called when the user is about to insert text. If clients want to prevent the default behavior,
@@ -55,20 +57,16 @@ export interface TextEditorViewEventHandler {
    *
    * @returns Whether the default behavior should be prevented.
    */
-  keydown(event: TextEditorKeyboardEvent): boolean;
+  keydown(event: TextEditorViewKeyboardEvent): boolean;
 
   /** Called when the user releases a key. */
-  keyup(event: TextEditorKeyboardEvent): boolean;
+  keyup(event: TextEditorViewKeyboardEvent): boolean;
 
-  /* ========= Undo/Redo ========= */
+  /* Called when the selection changes. */
+  selectionChanged(): void;
 
-  /** Called when the user presses the "undo" key combination. */
-  undo(): void;
-
-  /** Called when the user presses the "redo" key combination. */
-  redo(): void;
-
-  /* ========= Scrolling ========= */
+  /* Called when the content changes. */
+  contentChanged(): void;
 
   /**
    * Called when the user scrolls the editor.
@@ -76,12 +74,4 @@ export interface TextEditorViewEventHandler {
    * @param element The element that was scrolled.
    */
   scroll(element: HTMLElement): void;
-
-  /* ========= Selection ========= */
-
-  /* Called when the selection changes. */
-  selectionChanged(): void;
-
-  /* Called when the content changes. */
-  contentChanged(): void;
 }
