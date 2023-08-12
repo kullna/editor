@@ -27,9 +27,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. */
  * You can use the factory methods to produce new Text Document instances with modified content or
  * changed selection.
  *
- * When you are done creating a `TextDocument`, you can update the `TextEditorView`'s, document.
- *
- * @see {@link TextEditorView} . {@link TextEditorView#document}
+ * Text Document methods may be used when developing an Input Processor to create modifications of
+ * the original document and return them. See: {@link Processors}.
  */
 export class TextDocument {
   /**

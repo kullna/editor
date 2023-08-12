@@ -18,11 +18,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. */
  * # Keyboard Events
  *
  * When a keyboard event is fired, it is wrapped in a `TextEditorViewKeyboardEvent` object. This
- * object provides a more convenient interface for dealing with keyboard events - which
+ * object provides a more convenient interface for dealing with keyboard events - which avoids the
+ * need to perform string comparisons on key codes in other parts of the code.
  *
- * This class is used to wrap a keyboard event and provide a more convenient interface for dealing
- * with it. It avoids the need to perform string comparisons on key codes in other parts of the
- * code.
+ * Also, it makes the event immutable, which is important because the event is passed to multiple
+ * handlers. If the event were mutable, then one handler could modify the event in a way that
+ * affects other handlers.
+ *
+ * These event details can be used when developing an Input Processor to determine which key was
+ * pressed. See: {@link Processors}.
  */
 export class TextEditorViewKeyboardEvent {
   constructor(private readonly event: KeyboardEvent) {}
@@ -102,6 +106,7 @@ export class TextEditorViewKeyboardEvent {
    *   contents of the editor directly.
    */
   get isMutatingInput(): boolean {
+    if (this.keyCode === 'ENTER') return true;
     if (this.keyCode === 'BACKSPACE') return true;
     return (
       !this.isUndo &&

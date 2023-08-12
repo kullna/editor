@@ -211,7 +211,8 @@ export class SelectionBridge {
     const newDocumentTextContent = textDocument.text.replaceAll('\r\n', '\n');
 
     if (initialTextContent !== newDocumentTextContent) {
-      throw new Error('Text content does not match');
+      this.element.textContent = newDocumentTextContent;
+      // throw new Error('Text content does not match');
     }
     let characterCount = 0;
 

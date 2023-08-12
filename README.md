@@ -11,7 +11,7 @@
     <a href="https://cdn.jsdelivr.net/npm/@kullna/editor/dist/kullna-editor.min.js">
         <img src="https://img.shields.io/badge/CDN-JSDelivr-2aa198" alt="CDN">
     </a>
-    <a href="https://www.npmjs.com/package/kullna/editor">
+    <a href="https://www.npmjs.com/package/@kullna/editor">
         <img src="https://img.shields.io/npm/v/@kullna/editor?color=dc322f" alt="npm">
     </a>
     <img src="https://deno.bundlejs.com/?q=@kullna/editor&badge=small" alt="npm bundle size">
