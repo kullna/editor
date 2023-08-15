@@ -15,6 +15,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
 import {type TextEditorViewKeyboardEvent} from './keyboard_event';
+import {TextDocument} from './text_document';
 
 /**
  * When an `EditorDOMEventHandler` categorizes an event from the DOM, it will call the corresponding
@@ -62,11 +63,19 @@ export interface TextEditorViewEventHandler {
   /** Called when the user releases a key. */
   keyup(event: TextEditorViewKeyboardEvent): boolean;
 
-  /* Called when the selection changes. */
-  selectionChanged(): void;
+  /**
+   * Called when the selection changes.
+   *
+   * @param document The document that was changed.
+   */
+  selectionChanged(document: TextDocument): void;
 
-  /* Called when the content changes. */
-  contentChanged(): void;
+  /**
+   * Called when the content changes.
+   *
+   * @param document The document that was changed.
+   */
+  contentChanged(document: TextDocument): void;
 
   /**
    * Called when the user scrolls the editor.

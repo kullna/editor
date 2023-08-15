@@ -14,12 +14,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
-/** @packageDocumentation # Text Editing (Dev Version) */
-export {TextDocument} from './text_document';
-export {type TextEditorViewKeyboardEvent as TextEditorViewKeyboardEvent} from './keyboard_event';
-export {type TextEditorViewEventHandler} from './event_handler';
-export {domToDocument} from './dom/dom_reader';
-export {documentToDom} from './dom/dom_content_writer';
-export {mutateSelectionInDom} from './dom/dom_selection_writer';
-export {DomBridge} from './dom/dom_bridge';
-export {TextEditorView} from './text_editor_view';
+/** Describes the physical position of a line in the editor. */
+export type LineMetric = {
+  /** The top of the elements on the line. */
+  top: number;
+
+  /** The height of the elements on the line. */
+  height: number;
+};

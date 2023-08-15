@@ -16,7 +16,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
 import {InputProcessor, InputProcessorArgs} from './input_processor';
 import {TextDocument} from '../text_editor';
-import {Package} from '../../package';
 
 /**
  * # Newline Processor Options
@@ -99,11 +98,6 @@ export function newlineProcessor(opts: Partial<NewlineProcessorOptions>): InputP
   return (document: TextDocument, args: InputProcessorArgs): TextDocument | undefined => {
     if (!args.event.isEnter) return;
     args.handled = true;
-
-    if (Package.environment === 'DEVELOPMENT') {
-      // skipcq: JS-0002: Avoid console
-      console.log(' ✍️ NewlineProcessor');
-    }
 
     const before = document.preceedingText;
     const after = document.followingText;

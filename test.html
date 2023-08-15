@@ -369,8 +369,24 @@
         const editor = KullnaEditor.createEditor(element, options);
         editor.spellcheck = false;
         editor.code = defaultValue;
+        editor.wrapsText = true;
         editor.onSelectionFocusChanged(document => {
-          editor.highlightedLine = document.currentLineNumber;
+          // skipcq: JS-0002: Avoid console
+          console.log('⚠️  Selection Changed Called');
+          if (document.anchorIndex === document.focusIndex) {
+            editor.highlightedLine = document.endSelectionLine;
+            return;
+          }
+          editor.highlightedLine = -1;
+        });
+        editor.onUpdate(() => {
+          // skipcq: JS-0002: Avoid console
+          console.log('⚠️  Client Update Called');
+          if (editor.document.anchorIndex === editor.document.focusIndex) {
+            editor.highlightedLine = editor.document.endSelectionLine;
+            return;
+          }
+          editor.highlightedLine = -1;
         });
       }
 
@@ -389,10 +405,6 @@
               e.style.backgroundColor = 'transparent';
               // skipcq: JS-0002: Avoid console
               console.log('⚠️  Client Highlighter Called');
-            },
-            onUpdate: () => {
-              // skipcq: JS-0002: Avoid console
-              console.log('⚠️  Client Update Called');
             },
             gutter: {
               width: '55px',

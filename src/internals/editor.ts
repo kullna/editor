@@ -106,6 +106,11 @@ export class Editor
     this.view = new TextEditorView(options.window, parent, this);
     this.view.spellchecking = options.spellcheck;
     this.view.dir = options.dir;
+    this.view.onLineMetricsChanged = metrics => {
+      if (this.gutter) {
+        this.gutter.setNumberOfLines(metrics.length);
+      }
+    };
     this.view.language = options.language;
     if (options.highlight) this.view.highlightElement = options.highlight;
   }
@@ -118,6 +123,14 @@ export class Editor
   }
   set spellcheck(spellcheck: boolean) {
     this.view.spellchecking = spellcheck;
+  }
+
+  /** @inheritDoc */
+  get wrapsText(): boolean {
+    return this.view.wrapsText;
+  }
+  set wrapsText(wrapsText: boolean) {
+    this.view.wrapsText = wrapsText;
   }
 
   /** @inheritDoc */
@@ -162,11 +175,20 @@ export class Editor
    * @returns The current text content of the editor.
    */
   get code(): string {
-    return this.view.cachedDocument.text;
+    return this.view.document.text;
   }
 
   set code(code: string) {
-    this.view.setDocumentUnchecked(new TextDocument(0, 0, code, true));
+    this.view.document = new TextDocument(0, 0, code, false); //.selectAll().collapseToEnd();
+    this.notifyPotentiallyChanged(true);
+  }
+
+  /** @inheritDoc */
+  get document(): TextDocument {
+    return this.view.document;
+  }
+  set document(document: TextDocument) {
+    this.view.document = document;
     this.notifyPotentiallyChanged(true);
   }
 
@@ -189,7 +211,7 @@ export class Editor
 
   /** @inheritDoc */
   currentUndoRedoState(): TextDocument {
-    return this.view.cachedDocument;
+    return this.view.document;
   }
 
   /** @inheritDoc */
@@ -200,7 +222,7 @@ export class Editor
 
   /** @inheritDoc */
   restoreUndoRedoState(document: TextDocument) {
-    this.view.setDocumentUnchecked(document);
+    this.view.document = document;
   }
 
   // ---------------- EditorInputEventHandler ----------------
@@ -208,7 +230,7 @@ export class Editor
   /** @inheritDoc */
   selectionChanged(): void {
     if (this.options.onSelectionFocusChanged) {
-      this.options.onSelectionFocusChanged(this.view.cachedDocument);
+      this.options.onSelectionFocusChanged(this.view.document);
     }
   }
 
@@ -228,8 +250,8 @@ export class Editor
   cut(event: ClipboardEvent): void {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const originalEvent = (event as any).originalEvent ?? event;
-    originalEvent.clipboardData.setData('text/plain', this.view.cachedDocument.selectedText);
-    this.view.setDocumentUnchecked(this.view.cachedDocument.deleteSelection());
+    originalEvent.clipboardData.setData('text/plain', this.view.document.selectedText);
+    this.view.document = this.view.document.deleteSelection();
   }
 
   /** @inheritDoc */
@@ -237,8 +259,7 @@ export class Editor
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const originalEvent = (event as any).originalEvent ?? event;
     const text = originalEvent.clipboardData.getData('text/plain').replace(/\r\n/g, '\n');
-    // this.textEditor.type(text, true, true);
-    this.view.cachedDocument = this.view.cachedDocument.insertText(text, true, true);
+    this.view.document = this.view.document.insertText(text, true, true);
   }
 
   /** @inheritDoc */
@@ -271,7 +292,7 @@ export class Editor
 
   private processPipeline(pipeline: InputProcessor[], args: InputProcessorArgs): boolean {
     let handled = false;
-    const originalDocument = this.view.cachedDocument;
+    const originalDocument = this.view.document;
     let document = originalDocument;
     for (const processor of pipeline) {
       const result = processor(document, args);
@@ -284,7 +305,7 @@ export class Editor
       }
     }
     if (!document.strictEquals(originalDocument)) {
-      this.view.cachedDocument = document;
+      this.view.document = document;
     }
     return handled;
   }
@@ -300,28 +321,18 @@ export class Editor
    * @param programmatic Whether the change was made programmatically.
    */
   private notifyPotentiallyChanged(programmatic: boolean = false) {
-    if (!this.undoRedoManager.dirty()) {
-      return;
+    if (this.undoRedoManager.dirty()) {
+      if (programmatic) {
+        this.undoRedoManager.reset();
+      } else {
+        this.debouncedRecordHistory();
+      }
     }
-    if (this.gutter) {
-      const linesCount = this.code.replace(/\n+$/, '\n').split('\n').length;
-      this.gutter.setNumberOfLines(linesCount);
-    }
-    this.updateLineCounts();
-    if (programmatic) {
-      this.undoRedoManager.reset();
-    } else {
-      this.debouncedRecordHistory();
-
+    if (!programmatic) {
       if (this.options.onUpdate) {
         this.options.onUpdate(this.code);
       }
     }
-  }
-
-  /** Updates the line count in the gutter. */
-  private updateLineCounts(): void {
-    if (!this.gutter) return;
   }
 
   private readonly debouncedRecordHistory = debounce(() => {

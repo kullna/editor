@@ -14,7 +14,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
-import {Package} from '../../package';
 import {GutterCustomizer} from './customizer';
 import {GutterLineElement} from './line';
 import {GutterOptions} from './options';
@@ -224,11 +223,6 @@ function createHighlightElement(opts: GutterOptions): HTMLElement {
  * @returns The DOM element for the specified gutter options.
  */
 function createGutterElement(opts: GutterOptions): HTMLElement {
-  if (Package.environment === 'DEVELOPMENT') {
-    // skipcq: JS-0002: Avoid console
-    console.log(' 🖼️ Creating New Gutter DOM Element');
-  }
-
   const gutter = document.createElement('div');
   gutter.className = opts.class ?? '';
   gutter.dir = opts.dir;
@@ -258,11 +252,6 @@ function createGutterElement(opts: GutterOptions): HTMLElement {
  * @returns The gutter line elements.
  */
 function createGutterLineElement(): GutterLineElement {
-  if (Package.environment === 'DEVELOPMENT') {
-    // skipcq: JS-0002: Avoid console
-    console.log(' 🖼️ Creating New Gutter Line Element DOM Element');
-  }
-
   const gutterLineWrapper = document.createElement('div');
   gutterLineWrapper.style.display = 'block';
   gutterLineWrapper.style.width = '100%';

@@ -38,13 +38,40 @@ export class TextDocument {
    * @param focusIndex The index of the focus of the selection.
    * @param text The content of the text document.
    * @param noSelection Whether or not the selection is active.
+   * @param totalLines The total number of lines in the text document.
+   * @param startSelectionLine The line number of the first line of the selection.
+   * @param endSelectionLine The line number of the last line of the selection.
    */
   constructor(
     readonly anchorIndex: number,
     readonly focusIndex: number,
     readonly text: string,
-    private readonly noSelection: boolean = false
-  ) {}
+    private readonly noSelection: boolean = false,
+    readonly totalLines: number | null = null,
+    readonly startSelectionLine: number | null = null,
+    readonly endSelectionLine: number | null = null
+  ) {
+    if (totalLines) {
+      this.totalLines = totalLines;
+    } else {
+      this.totalLines = text.split('\n').length;
+    }
+    if (startSelectionLine) {
+      this.startSelectionLine = startSelectionLine;
+    } else {
+      this.startSelectionLine = text
+        .slice(0, Math.min(this.anchorIndex, this.focusIndex))
+        .split('\n').length;
+    }
+    if (!endSelectionLine) {
+      this.endSelectionLine =
+        1 +
+        this.totalLines -
+        text.slice(Math.max(this.anchorIndex, this.focusIndex)).split('\n').length;
+    } else {
+      this.endSelectionLine = endSelectionLine;
+    }
+  }
 
   /**
    * The direction of the selection (or cursor). `->` means the selection is from left to right.
@@ -169,6 +196,15 @@ export class TextDocument {
    */
   perceptuallyEquals(other: TextDocument): boolean {
     return this.text === other.text;
+  }
+
+  /**
+   * Selects all the text in the document.
+   *
+   * @returns A new text document with all the text selected.
+   */
+  selectAll(): TextDocument {
+    return new TextDocument(0, this.text.length, this.text);
   }
 
   /**
