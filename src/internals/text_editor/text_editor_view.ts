@@ -336,9 +336,13 @@ export class TextEditorView {
 
     // If the editor uses a font that is getting loaded asynchronously,
     // we need to update the line metrics once the font is loaded.
-    document.fonts.ready.then(() => {
-      this._bridge.recalculateLineMetrics();
-    });
+    document.fonts.ready
+      .then(() => {
+        this._bridge.recalculateLineMetrics();
+      })
+      .finally(() => {
+        this._bridge.recalculateLineMetrics();
+      });
 
     this._throttledHighlighter = new ThrottledAction(() => {
       this._formattedDisplay.textContent = this._bridge.document.text.replaceAll('\r', '');

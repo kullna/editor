@@ -147,7 +147,7 @@ class HighlightLineView implements Highlight {
  */
 function createHighlightElement(zIndex: number): HTMLElement {
   const highlight = document.createElement('div');
-  highlight.className = `highlight`;
+  highlight.className = 'highlight';
   highlight.style.position = 'absolute';
   highlight.style.left = '0px';
   highlight.style.right = '0px';
