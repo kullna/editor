@@ -220,7 +220,7 @@ export class TextEditorView {
     this._gutterWidth = width;
     this.updateDisplayStyles();
   }
-  private _gutterWidth: string = '55px';
+  private _gutterWidth: string = '0px';
 
   /**
    * Returns the inset string for the given top and leading values. This routine takes into account

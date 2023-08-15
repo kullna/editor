@@ -50,8 +50,8 @@ export class Gutter {
    * @param count The number of lines in the source text.
    */
   setNumberOfLines(count: number) {
-    this.lineCount = count;
-    setNumberOfLines(this.element, count, this.options.renderGutterLine);
+    this.lineCount = Math.max(1, count);
+    setNumberOfLines(this.element, this.lineCount, this.options.renderGutterLine);
     this.refreshStyles();
   }
 
@@ -125,16 +125,33 @@ export class Gutter {
     this.refreshStyles();
   }
 
+  /**
+   * Gets or sets whether the gutter has a border or not.
+   *
+   * @returns Whether the gutter has a border or not.
+   */
+  get width(): string {
+    return this.options.width;
+  }
+  set width(value: string) {
+    this.options.width = value;
+    this.refreshStyles();
+  }
+
   constructor(opts: Partial<GutterOptions> = {}) {
     this.options = {
       border: false,
-      highlightedLine: -1,
       dir: DEFAULT_DIR,
       class: DEFAULT_CLASS,
       width: DEFAULT_WIDTH,
       ...opts
     };
-    this.element = createGutterElement(this.options);
+    this.element = document.createElement('div');
+    this.element.style.position = 'absolute';
+    this.element.style.zIndex = '50';
+    this.element.style.top = '0px';
+    this.element.style.bottom = '0px';
+    this.element.style.overflow = 'hidden';
     this.setNumberOfLines(1);
     this.refreshStyles();
   }
@@ -151,6 +168,7 @@ export class Gutter {
 
   /** Refreshes the styles of the gutter (reapplys the styles to the gutter elements). */
   private refreshStyles() {
+    this.element.className = this.options.class ?? '';
     if (this.options.dir === 'ltr') {
       this.element.style.left = '0px';
       this.element.style.right = 'unset';
@@ -174,6 +192,7 @@ export class Gutter {
         this.element.style.borderRight = 'unset';
       }
     }
+    this.element.style.width = this.options.width;
   }
 }
 
@@ -185,35 +204,6 @@ export class Gutter {
 interface GutterAnnotatedHTMLElement extends HTMLElement {
   /** The gutter line element that this element is a part of. */
   gutterLineElement?: GutterLineElement;
-}
-
-/**
- * Constructs the DOM element for the gutter which holds the line number elements.
- *
- * @param opts The options for the gutter.
- * @returns The DOM element for the specified gutter options.
- */
-function createGutterElement(opts: GutterOptions): HTMLElement {
-  const gutter = document.createElement('div');
-  gutter.className = opts.class ?? '';
-  gutter.dir = opts.dir;
-  gutter.style.position = 'absolute';
-  gutter.style.top = '0px';
-  gutter.style.zIndex = '50';
-  gutter.style.bottom = '0px';
-  if (opts.dir === 'ltr') {
-    gutter.style.left = '0px';
-    gutter.style.right = 'unset';
-    gutter.style.textAlign = 'right';
-  } else {
-    gutter.style.right = '0px';
-    gutter.style.left = 'unset';
-    gutter.style.textAlign = 'left';
-  }
-  gutter.style.width = opts.width;
-  gutter.style.overflow = 'hidden';
-
-  return gutter;
 }
 
 /**

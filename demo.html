@@ -92,6 +92,16 @@
         margin-top: 5px;
       }
 
+      .breakpoint-highlight {
+        background-color: #dc322f77;
+        border-top: 2px solid var(--sd-red);
+        border-bottom: 2px solid var(--sd-red);
+        opacity: 0.4;
+        position: absolute;
+        left: 0;
+        right: 0;
+      }
+
       .code-gutter-highlight {
         background-color: #ffffff22;
         position: absolute;
@@ -155,13 +165,13 @@
     </main>
 
     <!-- For local testing, comment this: -->
-    <script src="https://cdn.jsdelivr.net/npm/@kullna/editor/dist/kullna-editor.min.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@kullna/editor/dist/kullna-editor.min.js"></script> -->
     <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/highlight.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
 
     <script type="module">
       // For local testing, uncomment this:
-      // import * as KullnaEditor from './dist/kullna-editor.esm.js';
+      import * as KullnaEditor from './dist/kullna-editor.esm.js';
 
       function demoWithOptions(parentSelector, id, titleText, options, defaultValue) {
         const parent = document.querySelector(parentSelector);
@@ -179,6 +189,8 @@
           editor.highlightedLine = document.currentLineNumber;
         });
         editor.code = defaultValue;
+
+        return editor;
       }
 
       document.onreadystatechange = () => {
@@ -186,7 +198,7 @@
           return;
         }
 
-        demoWithOptions(
+        const standard = demoWithOptions(
           '#demos',
           'standard',
           'Standard Configuration',
@@ -202,7 +214,7 @@
               class: 'code-gutter',
               renderGutterLine: (lineNumber, gutterLineElement) => {
                 gutterLineElement.accessorySpan.innerHtml = '';
-                if (lineNumber === 5) {
+                if (lineNumber === 4) {
                   const breakpoint = document.createElement('div');
                   breakpoint.classList.add('breakpoint');
                   gutterLineElement.accessorySpan.appendChild(breakpoint);
@@ -223,6 +235,11 @@
   });
 <\/script>`
         );
+        standard.wrapsText = true;
+        const standardHighlight = standard.createHighlight();
+        standardHighlight.lineNumber = 4;
+        standardHighlight.visible = true;
+        standardHighlight.cssClass = 'breakpoint-highlight';
 
         demoWithOptions(
           '#demos',
@@ -280,6 +297,45 @@ function DrawSpiral(angle: 15, distance: 5)
   next
 end function`
         );
+
+        const noGutter = demoWithOptions(
+          '#demos',
+          'nogutter',
+          'No Gutter',
+          {
+            language: 'javascript',
+            highlightElement: e => {
+              hljs.highlightElement(e);
+              e.style.backgroundColor = 'transparent';
+            }
+          },
+          `const standard = demoWithOptions(
+  '#demos',
+  'standard',
+  'Standard Configuration',
+  {
+    language: 'html',
+    highlightElement: e => {
+      hljs.highlightElement(e);
+      e.style.backgroundColor = 'transparent';
+    },
+    gutter: {
+      border: true,
+      width: '55px',
+      class: 'code-gutter',
+      renderGutterLine: (lineNumber, gutterLineElement) => {
+        gutterLineElement.accessorySpan.innerHtml = '';
+        if (lineNumber === 4) {
+          const breakpoint = document.createElement('div');
+          breakpoint.classList.add('breakpoint');
+          gutterLineElement.accessorySpan.appendChild(breakpoint);
+        }
+      }
+    }
+  }
+);`
+        );
+        noGutter.wrapsText = true;
       };
     </script>
     <script

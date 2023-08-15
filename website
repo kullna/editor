@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+npm run build:release
 rm -rf ./docs/
 mkdir ./docs/
 npm run document:$1

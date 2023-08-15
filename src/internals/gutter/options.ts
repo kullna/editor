@@ -35,9 +35,6 @@ export interface GutterOptions {
    */
   class?: string;
 
-  /** The line number to highlight. */
-  highlightedLine: number;
-
   /** Whether or not to show a border on the gutter. */
   border: boolean;
 

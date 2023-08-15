@@ -28,13 +28,13 @@ export class MutableTextDocument {
   text: string = '';
 
   /** Total number of lines in the document. */
-  totalLines: number = 1;
+  totalLines: number | null = 1;
 
   /** Represents the line number where the selection starts. */
-  startSelectionLine: number = 0;
+  startSelectionLine: number | null = 0;
 
   /** Represents the line number where the selection ends. */
-  endSelectionLine: number = 0;
+  endSelectionLine: number | null = 0;
 
   /**
    * Indicates if there's no active selection in the document.

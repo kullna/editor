@@ -114,6 +114,15 @@ export class DomBridge {
    */
   poll(): TextDocument {
     const document = domToDocument(this.window, this.element);
+    // IF the browser doesn't support plaintext-only contenteditable, and the number of lines
+    // changed in the DOM; we need to push the entire document to the DOM because the browser
+    // will do some weird things with the DOM that we don't currently handle well.
+    // This is currently only the case in Firefox.
+    if (this.element.contentEditable === 'true') {
+      if (document.totalLines !== this._document.totalLines) {
+        documentToDom(this.element, document);
+      }
+    }
     this.setDocumentWithChangeNotification(document);
     return this.document;
   }
@@ -140,10 +149,25 @@ export class DomBridge {
    */
   recalculateLineMetrics() {
     const lineContainers = Array.from(this.element.querySelectorAll('.text-document-line'));
-    const lineMetrics: LineMetric[] = lineContainers.map(lineContainer => ({
-      top: (lineContainer as HTMLElement).offsetTop,
-      height: (lineContainer as HTMLElement).offsetHeight
-    }));
+    const lineMetrics: LineMetric[] = [];
+    // When the user deletes a line and we aren't pushing the entire document to the DOM, we need to
+    // handle some of the cases where we run into the brower's built-in editing. For one, the line
+    // elements don't get automatically merged, so we need to do that ourselves.
+    // TODO: Merge instead of ignoring. Process br and \n as line breaks.
+    for (let i = 0; i < lineContainers.length; i++) {
+      const lineContainer = lineContainers[i] as HTMLElement;
+      if (
+        i != lineContainers.length - 1 &&
+        (lineContainer.childNodes.length === 0 ||
+          (lineContainer.lastChild !== null && lineContainer.lastChild.nodeName !== 'BR'))
+      ) {
+        continue;
+      }
+      lineMetrics.push({
+        top: lineContainer.offsetTop,
+        height: lineContainer.offsetHeight
+      });
+    }
     this.setLineMetricsWithChangeNotification(lineMetrics);
   }
 
