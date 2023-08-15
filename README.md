@@ -30,23 +30,23 @@
 </p>
 <p><br/></p>
 
-`@kullna/editor` is a web code editor developed by
-[The Kullna Programming Language Project](http://www.kullna.org/); a platform dedicated to teaching
-children programming in their own language.
+`@kullna/editor` is a browser-based code editor component developed and maintained by
+[The Kullna Programming Language Project](http://www.kullna.org/).
 
-As we worked on the Kullna IDE, we needed a reliable code editor with features like syntax
-highlighting, efficient indentation management, line highlighting, and a customizable gutter for
-adding breakpoints and bookmarks. An essential requirement was support for Right-to-Left (RTL)
-languages.
+As we were working on the Kullna IDE, we found the need for a reliable `contenteditable` code
+editing surface with features like syntax highlighting, indentation management, line highlighting,
+and a customizable gutter for adding breakpoints and bookmarks. For us, an essential requirement was
+support for Right-to-Left (RTL) languages too.
 
-Our research showed a gap in the market: many available editors were either too complex to be easily
-customized to our needs, or didn't offer the robustness we needed. Notably, none provided RTL
-support.
+Most of the existing editors were either too heavy and didn't work with RTL, or too simple and
+didn't include sufficient features for our needs. We wanted a simple yet versatile editor that we
+could easily extend to meet our specific needs, and which didn't break foundational features like
+RTL support in the process. One that, if we needed to, we could maintain ourselves.
 
-To address this, we introduced `@kullna/editor`. It's a simple yet versatile code editor, designed
-with extensibility in mind and built-in RTL support. Crafted in TypeScript, this lightweight,
-dependency-free editor is not only suitable for basic code editing tasks but also capable of
-supporting more advanced features like auto-complete and inline help.
+To address this gap, we're introducing `@kullna/editor`. A simple yet versatile code editor,
+designed with extensibility in mind and built-in RTL support. If you're looking for a lightweight
+code editor for your web application, we hope you'll find `@kullna/editor` useful, and we welcome
+your feedback and contributions.
 
 ## Features
 

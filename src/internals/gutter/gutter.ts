@@ -14,6 +14,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
+import {LineMetric} from '../text_editor/line_metric';
 import {GutterCustomizer} from './customizer';
 import {GutterLineElement} from './line';
 import {GutterOptions} from './options';
@@ -54,17 +55,31 @@ export class Gutter {
     this.refreshStyles();
   }
 
-  private scrollTop: number = 0;
   /**
    * Sets the scroll top of the gutter.
    *
    * @param scrollTop The scroll top of the gutter.
    */
   setScrollTop(scrollTop: number): void {
-    // element.scrollTop
-    this.scrollTop = scrollTop;
     this.element.style.top = `-${scrollTop}px`;
     this.refreshStyles();
+  }
+
+  /**
+   * Updates the highlights with new line information.
+   *
+   * @param metrics The new line metrics.
+   */
+  updateLineMetrics(metrics: LineMetric[]) {
+    this.setNumberOfLines(metrics.length);
+    for (let i = 0; i < metrics.length; i++) {
+      const line = metrics[i];
+      const gutterLine = this.referenceElementForLineNumber(i + 1);
+      if (gutterLine !== null) {
+        gutterLine.style.top = `${line.top}px`;
+        gutterLine.style.height = `${line.height}px`;
+      }
+    }
   }
 
   /**
@@ -110,22 +125,6 @@ export class Gutter {
     this.refreshStyles();
   }
 
-  /**
-   * Gets or sets the line number that is currently highlighted.
-   *
-   * @returns The line number that is currently highlighted.
-   */
-  get highlightedLine() {
-    return this.options.highlightedLine;
-  }
-  set highlightedLine(value: number) {
-    this.options.highlightedLine = value;
-    this.refreshStyles();
-  }
-
-  /** Returns the reference span for a given line number. */
-  public highlightElement: HTMLElement;
-
   constructor(opts: Partial<GutterOptions> = {}) {
     this.options = {
       border: false,
@@ -136,7 +135,6 @@ export class Gutter {
       ...opts
     };
     this.element = createGutterElement(this.options);
-    this.highlightElement = createHighlightElement(this.options);
     this.setNumberOfLines(1);
     this.refreshStyles();
   }
@@ -176,18 +174,6 @@ export class Gutter {
         this.element.style.borderRight = 'unset';
       }
     }
-    if (this.highlightedLine !== -1) {
-      const referenceElement = this.referenceElementForLineNumber(this.highlightedLine);
-      if (!referenceElement) {
-        this.highlightElement.style.visibility = 'hidden';
-      } else {
-        this.highlightElement.style.visibility = 'visible';
-        this.highlightElement.style.top = `${referenceElement.offsetTop - this.scrollTop}px`;
-        this.highlightElement.style.height = `${referenceElement.offsetHeight}px`;
-      }
-    } else {
-      this.highlightElement.style.visibility = 'hidden';
-    }
   }
 }
 
@@ -202,21 +188,6 @@ interface GutterAnnotatedHTMLElement extends HTMLElement {
 }
 
 /**
- * @param opts The options for the gutter.
- * @returns A DOM element that represents a horizontal highlight.
- */
-function createHighlightElement(opts: GutterOptions): HTMLElement {
-  const highlight = document.createElement('div');
-  highlight.className = opts.class ? `${opts.class}-highlight` : '';
-  highlight.style.position = 'absolute';
-  highlight.style.left = '0px';
-  highlight.style.right = '0px';
-  highlight.style.zIndex = '99';
-  highlight.innerHTML = '&nbsp;';
-  return highlight;
-}
-
-/**
  * Constructs the DOM element for the gutter which holds the line number elements.
  *
  * @param opts The options for the gutter.
@@ -226,7 +197,6 @@ function createGutterElement(opts: GutterOptions): HTMLElement {
   const gutter = document.createElement('div');
   gutter.className = opts.class ?? '';
   gutter.dir = opts.dir;
-
   gutter.style.position = 'absolute';
   gutter.style.top = '0px';
   gutter.style.zIndex = '50';
@@ -252,8 +222,12 @@ function createGutterElement(opts: GutterOptions): HTMLElement {
  * @returns The gutter line elements.
  */
 function createGutterLineElement(): GutterLineElement {
-  const gutterLineWrapper = document.createElement('div');
+  const gutterLineWrapper = document.createElement('span');
   gutterLineWrapper.style.display = 'block';
+  gutterLineWrapper.style.position = 'absolute';
+  gutterLineWrapper.style.padding = '2px';
+  gutterLineWrapper.style.left = '0px';
+  gutterLineWrapper.style.right = '0px';
   gutterLineWrapper.style.width = '100%';
 
   const lineNumberSpan = document.createElement('span');

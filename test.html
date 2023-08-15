@@ -73,7 +73,7 @@
         font-size: 12px;
         font-weight: 400;
         min-height: 240px;
-        width: 700px;
+        width: 100%;
         letter-spacing: normal;
         line-height: 20px;
         tab-size: 4;
@@ -93,13 +93,43 @@
         margin-top: 5px;
       }
 
+      .breakpoint-highlight {
+        background-color: #dc322f77;
+        border-top: 2px solid var(--sd-red);
+        border-bottom: 2px solid var(--sd-red);
+        opacity: 0.4;
+        position: absolute;
+        left: 0;
+        right: 0;
+      }
+
+      .execution-highlight {
+        background-color: #b5890077;
+        opacity: 0.6;
+        position: absolute;
+        left: 0;
+        right: 0;
+      }
+
       .code-gutter-highlight {
         background-color: #ffffff22;
         position: absolute;
         left: 0;
         right: 0;
-        top: 8px;
-        bottom: 9px;
+      }
+
+      .code-gutter-highlight-start {
+        background-color: #55ff5522;
+        position: absolute;
+        left: 0;
+        right: 0;
+      }
+
+      .code-gutter-highlight-end {
+        background-color: #ff555522;
+        position: absolute;
+        left: 0;
+        right: 0;
       }
 
       .code-gutter {
@@ -370,23 +400,57 @@
         editor.spellcheck = false;
         editor.code = defaultValue;
         editor.wrapsText = true;
+
+        const highlightBreakpoint = editor.createHighlight();
+        highlightBreakpoint.lineNumber = 5;
+        highlightBreakpoint.cssClass = 'breakpoint-highlight';
+        highlightBreakpoint.visible = true;
+
+        const executionBreakpoint = editor.createHighlight();
+        executionBreakpoint.lineNumber = 7;
+        executionBreakpoint.cssClass = 'execution-highlight';
+        executionBreakpoint.visible = true;
+
+        const highlightStart = editor.createHighlight();
+        highlightStart.lineNumber = 1;
+        highlightStart.cssClass = 'code-gutter-highlight';
+
+        const highlightEnd = editor.createHighlight();
+        highlightEnd.lineNumber = 1;
+        highlightEnd.cssClass = 'code-gutter-highlight-end';
+
+        const updateHighlights = document => {
+          if (document.anchorIndex === document.focusIndex) {
+            highlightStart.cssClass = 'code-gutter-highlight';
+            highlightStart.lineNumber = document.startSelectionLine;
+            highlightStart.visible = true;
+            highlightEnd.visible = false;
+            return;
+          } else if (document.startSelectionLine !== document.endSelectionLine) {
+            highlightStart.cssClass = `code-gutter-highlight-${
+              document.anchorIndex < document.focusIndex ? 'start' : 'end'
+            }`;
+            highlightStart.lineNumber = document.startSelectionLine;
+            highlightEnd.cssClass = `code-gutter-highlight-${
+              document.anchorIndex < document.focusIndex ? 'end' : 'start'
+            }`;
+            highlightEnd.lineNumber = document.endSelectionLine;
+            highlightStart.visible = true;
+            highlightEnd.visible = true;
+          } else {
+            highlightStart.visible = false;
+            highlightEnd.visible = false;
+          }
+        };
         editor.onSelectionFocusChanged(document => {
           // skipcq: JS-0002: Avoid console
           console.log('⚠️  Selection Changed Called');
-          if (document.anchorIndex === document.focusIndex) {
-            editor.highlightedLine = document.endSelectionLine;
-            return;
-          }
-          editor.highlightedLine = -1;
+          updateHighlights(document);
         });
         editor.onUpdate(() => {
           // skipcq: JS-0002: Avoid console
           console.log('⚠️  Client Update Called');
-          if (editor.document.anchorIndex === editor.document.focusIndex) {
-            editor.highlightedLine = editor.document.endSelectionLine;
-            return;
-          }
-          editor.highlightedLine = -1;
+          updateHighlights(document);
         });
       }
 
