@@ -113,6 +113,12 @@ export class TextEditorView {
   private _selectionChangeListener: (() => void) | null = null;
 
   /**
+   * The block we attached to the window's 'resize' event which needs to be removed if we are
+   * destroyed.
+   */
+  private _resizeChangeListener: (() => void) | null = null;
+
+  /**
    * The bridge provides a way to synchronize the state of the text editor with the state of the
    * document and acts as the source of truth for the current state of the document.
    */
@@ -328,6 +334,16 @@ export class TextEditorView {
       throw new Error('Could not create editor element');
     }
 
+    // If the editor uses a font that is getting loaded asynchronously,
+    // we need to update the line metrics once the font is loaded.
+    document.fonts.ready
+      .then(() => {
+        this._bridge.recalculateLineMetrics();
+      })
+      .finally(() => {
+        this._bridge.recalculateLineMetrics();
+      });
+
     this._throttledHighlighter = new ThrottledAction(() => {
       this._formattedDisplay.textContent = this._bridge.document.text.replaceAll('\r', '');
       if (this.highlightElement) {
@@ -346,10 +362,11 @@ export class TextEditorView {
       this._focused = true;
     });
 
-    this.on('resize', this.element, () => {
+    this._resizeChangeListener = () => {
       this._throttledScroller.trigger();
       this._bridge.recalculateLineMetrics();
-    });
+    };
+    this.window.addEventListener('resize', this._resizeChangeListener);
 
     this.on('blur', this.element, () => {
       this._focused = false;
@@ -447,6 +464,10 @@ export class TextEditorView {
     if (this._selectionChangeListener) {
       this.window.document.removeEventListener('selectionchange', this._selectionChangeListener);
       this._selectionChangeListener = null;
+    }
+    if (this._resizeChangeListener) {
+      this.window.removeEventListener('resize', this._resizeChangeListener);
+      this._resizeChangeListener = null;
     }
   }
 }

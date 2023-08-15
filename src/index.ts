@@ -57,6 +57,7 @@ import {Options} from './options';
 export {KullnaEditor, Options};
 export * as Text from './internals/text_editor';
 export * as Gutters from './internals/gutter';
+export * as Highlights from './internals/highlights';
 export * as Processors from './internals/pipeline';
 
 /** The default value for "tab" in {@link Options}. */

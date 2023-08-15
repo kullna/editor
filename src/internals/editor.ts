@@ -23,6 +23,8 @@ import {TextEditorView} from './text_editor/text_editor_view';
 import {type TextEditorViewEventHandler} from './text_editor/event_handler';
 import {KullnaEditor} from '../kullna_editor';
 import {type EditorOptions} from './editor_options';
+import {Highlight} from './highlights';
+import {HighlightView} from './highlights/highlight_view';
 
 /**
  * The delay in milliseconds before the highlight function is called. Additional highlight requests
@@ -46,6 +48,9 @@ export class Editor
 {
   /** The gutter element (if one exists). */
   private readonly gutter?: Gutter;
+
+  /** The class that manages the line highlights. */
+  private readonly highlightView: HighlightView;
 
   /**
    * The selection manager is responsible for keeping track of the current selection in the editor,
@@ -86,6 +91,8 @@ export class Editor
     parent.style.overflow = 'hidden';
     parent.dir = options.dir;
 
+    this.highlightView = new HighlightView(parent, 99);
+
     if (options.gutter) {
       // Default gutter options if not specified:
       if (options.gutter.dir === undefined) {
@@ -96,9 +103,6 @@ export class Editor
       const gutter = new Gutter(options.gutter);
       this.gutter = gutter;
       parent.appendChild(gutter.element);
-      if (gutter.highlightElement) {
-        parent.appendChild(gutter.highlightElement);
-      }
       gutter.dir = options.dir;
     }
 
@@ -108,14 +112,20 @@ export class Editor
     this.view.dir = options.dir;
     this.view.onLineMetricsChanged = metrics => {
       if (this.gutter) {
-        this.gutter.setNumberOfLines(metrics.length);
+        this.gutter.updateLineMetrics(metrics);
       }
+      this.highlightView.updateLineMetrics(metrics);
     };
     this.view.language = options.language;
     if (options.highlight) this.view.highlightElement = options.highlight;
   }
 
   // ---------------- Editor ----------------
+
+  /** @inheritDoc */
+  createHighlight(): Highlight {
+    return this.highlightView.createHighlight();
+  }
 
   /** @inheritDoc */
   get spellcheck(): boolean {
@@ -149,16 +159,6 @@ export class Editor
     this.view.dir = dir;
     if (this.gutter) {
       this.gutter.dir = dir;
-    }
-  }
-
-  /** @inheritDoc */
-  get highlightedLine(): number {
-    return this.gutter ? this.gutter.highlightedLine : -1;
-  }
-  set highlightedLine(line: number) {
-    if (this.gutter) {
-      this.gutter.highlightedLine = line;
     }
   }
 
@@ -241,6 +241,7 @@ export class Editor
 
   /** @inheritDoc */
   scroll(element: HTMLElement) {
+    this.highlightView.setScrollTop(element.scrollTop);
     if (!this.gutter) return;
     // this.gutter.element.style.top = `-${element.scrollTop}px`;
     this.gutter.setScrollTop(element.scrollTop);

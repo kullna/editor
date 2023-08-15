@@ -14,6 +14,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
+import {Highlight} from './internals/highlights';
 import {TextDocument} from './internals/text_editor';
 
 /**
@@ -62,12 +63,8 @@ export interface KullnaEditor {
    */
   onSelectionFocusChanged(callback: (document: TextDocument) => void): void;
 
-  /**
-   * Gets or sets which line is highlighted. The line number is 1-based. Passing `0` will remove the
-   * highlight.
-   */
-  get highlightedLine(): number;
-  set highlightedLine(line: number);
+  /** Creates a new highlight (a bar over top of an entire line). */
+  createHighlight(): Highlight;
 
   /** Determines whether the editor wraps text or allows it to scroll horizontally. */
   get wrapsText(): boolean;
