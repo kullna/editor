@@ -42,6 +42,10 @@ export interface KullnaEditor {
   get code(): string;
   set code(code: string);
 
+  /** Gets or sets the text of the document along with the selection information. */
+  get document(): TextDocument;
+  set document(document: TextDocument);
+
   /**
    * Changes the function to be called when the editor's text content is updated.
    *
@@ -64,6 +68,10 @@ export interface KullnaEditor {
    */
   get highlightedLine(): number;
   set highlightedLine(line: number);
+
+  /** Determines whether the editor wraps text or allows it to scroll horizontally. */
+  get wrapsText(): boolean;
+  set wrapsText(wrapsText: boolean);
 
   /**
    * Gets or sets whether spellchecking is enabled.

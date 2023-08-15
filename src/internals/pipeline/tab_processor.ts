@@ -16,7 +16,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
 import {InputProcessor, InputProcessorArgs} from './input_processor';
 import {TextDocument} from '../text_editor';
-import {Package} from '../../package';
 
 /**
  * # Tab Processor Options
@@ -61,11 +60,6 @@ export function tabProcessor(opts: Partial<TabProcessorOptions>): InputProcessor
   return (document: TextDocument, args: InputProcessorArgs): TextDocument | undefined => {
     if (!args.event.isTab) return;
     args.handled = true;
-
-    if (Package.environment === 'DEVELOPMENT') {
-      // skipcq: JS-0002: Avoid console
-      console.log(' ✍️ TabProcessor');
-    }
 
     const shifted = args.event.isShift;
 

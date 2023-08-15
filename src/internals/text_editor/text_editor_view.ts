@@ -15,11 +15,11 @@ You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
 import {TextDocument} from './text_document';
-import {Package} from '../../package';
 import {type TextEditorViewEventHandler} from './event_handler';
 import {TextEditorViewKeyboardEvent} from './keyboard_event';
-import {SelectionBridge} from './selection_bridge';
 import {ThrottledAction} from '../utils/throttled_action';
+import {DomBridge} from './dom/dom_bridge';
+import {LineMetric} from './line_metric';
 
 /**
  * The TextEditorView class provides a simple API for managing the state of a browser-based text
@@ -70,112 +70,60 @@ import {ThrottledAction} from '../utils/throttled_action';
  * - https://developer.mozilla.org/en-US/docs/Web/API/Range
  */
 export class TextEditorView {
-  // TODO: Move this to the editor class.
-  private _workingDocument: TextDocument;
-  get cachedDocument(): TextDocument {
-    return this._workingDocument;
-  }
-  set cachedDocument(document: TextDocument) {
-    if (this._workingDocument.strictEquals(document)) return;
-
-    const contentChanged = !this._workingDocument.perceptuallyEquals(document);
-    this.bridge.writeSelection(document);
-    this.setDocumentUnchecked(document);
-    this._workingDocument = document;
-
-    if (contentChanged) {
-      this.listener.contentChanged();
-    }
-    this.listener.selectionChanged();
-  }
-  private readonly bridge: SelectionBridge;
-
-  private _lastDOMDocument: TextDocument = new TextDocument(0, 0, '', true);
-  private _lastPassedDocument: TextDocument = new TextDocument(0, 0, '', true);
-
   /**
-   * Reads the current state of the DOM and updates the last known state of the DOM.
-   *
-   * @returns A TextDocument representing the current state of the DOM.
+   * The function that the editor view will call when the content of the text editor changes and
+   * needs to be redrawn.
    */
-  private updateLastKnownDOMState(): TextDocument {
-    const document = this.bridge.readSelection();
-    this._workingDocument = document;
-
-    if (!this._lastPassedDocument.strictEquals(document)) {
-      if (!this._lastPassedDocument.perceptuallyEquals(document)) {
-        if (this.element) {
-          const safeString = window.document.createTextNode(document.text.replace(/\r\n/g, '\n'));
-          this.element.textContent = safeString.textContent;
-          this.invokeHighlighter();
-        }
-        this.bridge.writeSelection(document);
-        if (Package.environment === 'DEVELOPMENT') {
-          // skipcq: JS-0002: Avoid console
-          console.log(' ⚡ Content Changed Event');
-        }
-        this.listener.contentChanged();
-      }
-      if (Package.environment === 'DEVELOPMENT') {
-        // skipcq: JS-0002: Avoid console
-        console.log(' ⚡ Selection Changed Event');
-      }
-      this.listener.selectionChanged();
-    }
-    this._lastDOMDocument = document;
-    this._lastPassedDocument = document;
-    return this._lastDOMDocument;
-  }
-
-  /**
-   * Sets the document without performing any content-change-related callbacks. (Note that we still
-   * invoke the rendering/highlighting logic.)
-   *
-   * @param document The new working document.
-   */
-  setDocumentUnchecked(document: TextDocument) {
-    this._workingDocument = document;
-    this._lastPassedDocument = document;
-
-    if (!this.element) return;
-
-    if (this._lastDOMDocument.strictEquals(document)) {
-      this._lastDOMDocument = document;
-      return;
-    }
-
-    if (this._lastDOMDocument.perceptuallyEquals(document)) {
-      this.bridge.writeSelection(document);
-      return;
-    }
-
-    if (Package.environment === 'DEVELOPMENT') {
-      // skipcq: JS-0002: Avoid console
-      console.log(' ✏️ Writing Text Content to DOM');
-    }
-
-    const safeString = window.document.createTextNode(document.text.replace(/\r\n/g, '\n'));
-    this.element.textContent = safeString.textContent;
-
-    this.bridge.writeSelection(document);
-    this.invokeHighlighter();
-    this._lastDOMDocument = document;
-  }
-
-  /** The function that will be called when the content of the text editor changes. */
   // skipcq: JS-0105, JS-0321: No "this", no empty function.
-  highlightElement: (element: HTMLElement) => void = () => {};
-  private readonly _formattedDisplay: HTMLElement;
-  private readonly _throttledHighlighter: ThrottledAction;
-  private invokeHighlighter() {
-    if (Package.environment === 'DEVELOPMENT') {
-      // skipcq: JS-0002: Avoid console
-      console.log(' 🎨 Highlighting Requested');
-    }
-    this._throttledHighlighter.trigger();
-  }
+  highlightElement?: (element: HTMLElement) => void;
 
-  private _language: string = 'text';
+  /** The constructed content-editable element. */
+  private element?: HTMLElement;
+
+  /** The syntax-highlighted text. */
+  private readonly _formattedDisplay: HTMLElement;
+
+  /** The listeners that have been added to the element. */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private readonly _listeners: [string, any][] = [];
+
+  /** Invoke to inform clients that the editor scrolled. */
+  private readonly _throttledScroller: ThrottledAction;
+
+  /**
+   * The object that throttles calls to {@link highlightElement}.
+   *
+   * Instead of calling {@link highlightElement} every time the user types a character, we call it at
+   * most once every (1 / 60)s. So we call _throttledHighlighter.trigger() to do this instead.
+   */
+  private readonly _throttledHighlighter: ThrottledAction;
+
+  /**
+   * Whether the editor is focused.
+   *
+   * @remarks
+   *   We never want to process events if the editor is not focused.
+   */
+  private _focused: boolean = false;
+
+  /**
+   * The block we attached to the window's 'selectionchange' event which needs to be removed if we
+   * are destroyed.
+   */
+  private _selectionChangeListener: (() => void) | null = null;
+
+  /**
+   * The bridge provides a way to synchronize the state of the text editor with the state of the
+   * document and acts as the source of truth for the current state of the document.
+   */
+  private _bridge: DomBridge;
+
+  /**
+   * The programming language code that the editor is currently using for syntax highlighting.
+   *
+   * @returns The programming language code that the editor is currently using for syntax
+   *   highlighting.
+   */
   get language(): string {
     return this._language;
   }
@@ -186,8 +134,13 @@ export class TextEditorView {
     }
     this._language = lang;
   }
+  private _language: string = 'text';
 
-  private _spellchecking: boolean = false;
+  /**
+   * Whether spellchecking is currently enabled.
+   *
+   * @returns Whether spellchecking is currently enabled.
+   */
   get spellchecking(): boolean {
     return this._spellchecking;
   }
@@ -207,8 +160,13 @@ export class TextEditorView {
     }
     this._spellchecking = spellcheck;
   }
+  private _spellchecking: boolean = false;
 
-  private _dir: 'ltr' | 'rtl' = 'ltr';
+  /**
+   * The current text direction.
+   *
+   * @returns The current text direction.
+   */
   get dir(): 'ltr' | 'rtl' {
     return this._dir;
   }
@@ -220,8 +178,35 @@ export class TextEditorView {
     this._dir = dir;
     this.updateDisplayStyles();
   }
+  private _dir: 'ltr' | 'rtl' = 'ltr';
 
-  private _gutterWidth: string = '55px';
+  /**
+   * Whether the content should wrap to fit the window.
+   *
+   * @returns Whether the content should wrap to fit the window.
+   */
+  get wrapsText(): boolean {
+    return this._wrapsText;
+  }
+  set wrapsText(wrap: boolean) {
+    this._wrapsText = wrap;
+    if (!this.element) return;
+    this.element.style.whiteSpace = wrap ? 'pre-wrap' : 'pre';
+    this._formattedDisplay.style.whiteSpace = wrap ? 'pre-wrap' : 'pre';
+    this._bridge.poll(); // Line metrics may have changed.
+  }
+  private _wrapsText: boolean = false;
+
+  get lineMetrics(): LineMetric[] {
+    return this._bridge.lineMetrics;
+  }
+  onLineMetricsChanged?: (metrics: LineMetric[]) => void;
+
+  /**
+   * The width of the gutter as a CSS metric string.
+   *
+   * @returns The width of the gutter as a CSS metric string.
+   */
   get gutterWidth(): string {
     return this._gutterWidth;
   }
@@ -229,22 +214,7 @@ export class TextEditorView {
     this._gutterWidth = width;
     this.updateDisplayStyles();
   }
-
-  /**
-   * Updates the display styles for the editor and the formatted display.
-   *
-   * @param updateEditor Whether or not to update the editor's styles.
-   */
-  private updateDisplayStyles(updateEditor: boolean = true): void {
-    if (!this.element) return;
-    if (updateEditor) {
-      this.element.style.inset = this.insetWithLeading('0px', this._gutterWidth);
-    }
-    this._formattedDisplay.style.inset = this.insetWithLeading(
-      `-${this.element.scrollTop}px`,
-      `calc(${(this._dir === 'ltr' ? -1 : 1) * this.element.scrollLeft}px + ${this._gutterWidth})`
-    );
-  }
+  private _gutterWidth: string = '55px';
 
   /**
    * Returns the inset string for the given top and leading values. This routine takes into account
@@ -263,18 +233,16 @@ export class TextEditorView {
   }
 
   /**
-   * Whether the editor is focused.
+   * The text document that is being edited.
    *
-   * @remarks
-   *   We never want to process events if the editor is not focused.
+   * @returns The text document that is being edited.
    */
-  private focused: boolean = false;
-
-  /** The listeners that have been added to the element. */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private readonly listeners: [string, any][] = [];
-
-  private selectionChangeListener: (() => void) | null = null;
+  get document(): TextDocument {
+    return this._bridge.document;
+  }
+  set document(document: TextDocument) {
+    this._bridge.pushToDOM(document);
+  }
 
   /**
    * Template pattern for adding an event listener to the DOM and our list.
@@ -289,13 +257,8 @@ export class TextEditorView {
     listener: (event: HTMLElementEventMap[K]) => void
   ): void {
     element.addEventListener(type, listener);
-    this.listeners.push([type, listener]);
+    this._listeners.push([type, listener]);
   }
-
-  private element?: HTMLElement;
-
-  /** Invoke to inform clients that the editor scrolled. */
-  private readonly _throttledScroller: ThrottledAction;
 
   /**
    * Creates a new `TextEditorView`.
@@ -316,9 +279,9 @@ export class TextEditorView {
     const highlighted = document.createElement('div');
     this._formattedDisplay = highlighted;
     highlighted.style.outline = 'none';
+    highlighted.style.whiteSpace = 'pre';
     highlighted.style.overflowWrap = 'break-word';
     highlighted.style.overflowY = 'auto';
-    highlighted.style.whiteSpace = 'pre';
     highlighted.style.top = '0px';
     highlighted.style.right = '0px';
     highlighted.style.left = '0px';
@@ -332,7 +295,6 @@ export class TextEditorView {
     // editor is above the highlighted element in the DOM, so that
     // the editor can capture the user's input.
     const editor = highlighted.cloneNode() as HTMLElement;
-    highlighted.style.overflow = 'initial';
     highlighted.style.zIndex = '0';
     this.element = editor;
     editor.setAttribute('contenteditable', 'plaintext-only');
@@ -340,9 +302,24 @@ export class TextEditorView {
       editor.setAttribute('contenteditable', 'true');
     }
     editor.style.color = 'transparent';
+    editor.style.cursor = 'text';
     editor.style.zIndex = '100';
     editor.style.caretColor = 'white';
     parent.appendChild(editor);
+
+    this._bridge = new DomBridge(window, editor);
+    this._bridge.addDocumentContentAndSelectionChangedCallback(document => {
+      this._throttledHighlighter.trigger();
+      this.listener.contentChanged(document);
+    });
+    this._bridge.addDocumentSelectionChangedCallback(document => {
+      this.listener.selectionChanged(document);
+    });
+    this._bridge.addLineMetricsChangeCallback(metrics => {
+      if (this.onLineMetricsChanged) {
+        this.onLineMetricsChanged(metrics);
+      }
+    });
 
     this.language = 'text';
     this.updateDisplayStyles();
@@ -351,26 +328,14 @@ export class TextEditorView {
       throw new Error('Could not create editor element');
     }
 
-    this.bridge = new SelectionBridge(this.element);
-    this._workingDocument = this.updateLastKnownDOMState();
-
     this._throttledHighlighter = new ThrottledAction(() => {
-      if (Package.environment === 'DEVELOPMENT') {
-        // skipcq: JS-0002: Avoid console
-        console.log(' 🎨 Highlight Sync');
+      this._formattedDisplay.textContent = this._bridge.document.text.replaceAll('\r', '');
+      if (this.highlightElement) {
+        this.highlightElement(this._formattedDisplay);
       }
-      const safeString = window.document.createTextNode(
-        this._workingDocument.text.replace(/\r\n/g, '\n')
-      );
-      this._formattedDisplay.textContent = safeString.textContent;
-      this.highlightElement(this._formattedDisplay);
     }, 1000 / 60);
 
     this._throttledScroller = new ThrottledAction(() => {
-      if (Package.environment === 'DEVELOPMENT') {
-        // skipcq: JS-0002: Avoid console
-        console.log(' 🎨 Scroll Sync');
-      }
       if (!this.element)
         throw new Error('Unexpectedly, No element. Did you forget to call destroy()?');
       this.updateDisplayStyles(false);
@@ -378,25 +343,30 @@ export class TextEditorView {
     }, 1000 / 60);
 
     this.on('focus', this.element, () => {
-      this.focused = true;
+      this._focused = true;
+    });
+
+    this.on('resize', this.element, () => {
+      this._throttledScroller.trigger();
+      this._bridge.recalculateLineMetrics();
     });
 
     this.on('blur', this.element, () => {
-      this.focused = false;
+      this._focused = false;
     });
 
-    this.selectionChangeListener = () => {
-      if (!this.focused) return;
-      this.updateLastKnownDOMState();
+    this._selectionChangeListener = () => {
+      if (!this._focused) return;
+      this._bridge.poll();
     };
-    this.window.document.addEventListener('selectionchange', this.selectionChangeListener);
+    this.window.document.addEventListener('selectionchange', this._selectionChangeListener);
 
     this.on('scroll', this.element, () => {
       this._throttledScroller.trigger();
     });
 
     this.on('keydown', this.element, (event: KeyboardEvent) => {
-      if (!this.focused) return;
+      if (!this._focused) return;
       if (event.defaultPrevented) return;
       if (event.isComposing) return;
 
@@ -417,12 +387,12 @@ export class TextEditorView {
     });
 
     this.on('input', this.element, () => {
-      if (!this.focused) return;
-      this.updateLastKnownDOMState();
+      if (!this._focused) return;
+      this._bridge.poll();
     });
 
     this.on('keyup', this.element, event => {
-      if (!this.focused) return;
+      if (!this._focused) return;
       if (event.defaultPrevented) return;
       if (event.isComposing) return;
 
@@ -431,26 +401,42 @@ export class TextEditorView {
     });
 
     this.on('cut', this.element, event => {
-      if (!this.focused) return;
+      if (!this._focused) return;
       if (event.defaultPrevented) return;
       event.preventDefault();
       this.listener.cut(event);
     });
 
     this.on('paste', this.element, event => {
-      if (!this.focused) return;
+      if (!this._focused) return;
       if (event.defaultPrevented) return;
       event.preventDefault();
       this.listener.paste(event);
     });
   }
 
+  /**
+   * Updates the display styles for the editor and the formatted display.
+   *
+   * @param updateEditor Whether or not to update the editor's styles.
+   */
+  private updateDisplayStyles(updateEditor: boolean = true): void {
+    if (!this.element) return;
+    if (updateEditor) {
+      this.element.style.inset = this.insetWithLeading('0px', this._gutterWidth);
+    }
+    this._formattedDisplay.style.inset = this.insetWithLeading(
+      `-${this.element.scrollTop}px`,
+      `calc(${(this._dir === 'ltr' ? -1 : 1) * this.element.scrollLeft}px + ${this._gutterWidth})`
+    );
+  }
+
   /** Removes all event listeners from the DOM element. */
   destroy() {
     if (!this.element) throw new Error('Editor element has already been destroyed');
 
-    while (this.listeners.length > 0) {
-      const obj = this.listeners.pop();
+    while (this._listeners.length > 0) {
+      const obj = this._listeners.pop();
       if (obj) {
         const [type, fn] = obj;
         this.element.removeEventListener(type, fn);
@@ -458,9 +444,9 @@ export class TextEditorView {
     }
     this.element.remove();
     this.element = undefined;
-    if (this.selectionChangeListener) {
-      this.window.document.removeEventListener('selectionchange', this.selectionChangeListener);
-      this.selectionChangeListener = null;
+    if (this._selectionChangeListener) {
+      this.window.document.removeEventListener('selectionchange', this._selectionChangeListener);
+      this._selectionChangeListener = null;
     }
   }
 }

@@ -16,7 +16,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
 import {InputProcessor, InputProcessorArgs} from './input_processor';
 import {TextDocument} from '../text_editor';
-import {Package} from '../../package';
 
 /**
  * A list of quotes. This is used to determine whether the user is typing a quote. All the
@@ -50,11 +49,6 @@ export function bracketProcessor(): InputProcessor {
    * @returns Whether the processor handled the event.
    */
   return (document: TextDocument, args: InputProcessorArgs): TextDocument | undefined => {
-    if (Package.environment === 'DEVELOPMENT') {
-      // skipcq: JS-0002: Avoid console
-      console.log(' ✍️ bracketProcessor');
-    }
-
     const keyCode = args.event.keyCode;
     const escapeCharacter = document.preceedingText.endsWith('\\');
     const charAfter = document.followingText.slice(0, 1);
