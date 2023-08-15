@@ -35,10 +35,12 @@ import {mutateSelectionInDom} from './dom_selection_writer';
  * truth for the document's current state.
  */
 export class DomBridge {
-  private _onDocumentSelectionChangedCallbacks: Array<(document: TextDocument) => void> = [];
-  private _onDocumentContentAndSelectionChangedCallbacks: Array<(document: TextDocument) => void> =
+  private readonly _onDocumentSelectionChangedCallbacks: Array<(document: TextDocument) => void> =
     [];
-  private _onLineMetricsChangedCallbacks: Array<(metrics: LineMetric[]) => void> = [];
+  private readonly _onDocumentContentAndSelectionChangedCallbacks: Array<
+    (document: TextDocument) => void
+  > = [];
+  private readonly _onLineMetricsChangedCallbacks: Array<(metrics: LineMetric[]) => void> = [];
 
   /**
    * Gets or sets the current text document representation.

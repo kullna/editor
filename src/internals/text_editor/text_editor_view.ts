@@ -116,7 +116,7 @@ export class TextEditorView {
    * The bridge provides a way to synchronize the state of the text editor with the state of the
    * document and acts as the source of truth for the current state of the document.
    */
-  private _bridge: DomBridge;
+  private readonly _bridge: DomBridge;
 
   /**
    * The programming language code that the editor is currently using for syntax highlighting.

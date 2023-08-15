@@ -30,14 +30,14 @@ export function domToDocument(window: Window, element: HTMLElement): TextDocumen
 }
 
 /**
- * The `DOMParser` class is responsible for parsing an HTML element to extract a text document,
- * including details about the text and its selection.
+ * The `DomToDocumentReader` class is responsible for parsing an HTML element to extract a text
+ * document, including details about the text and its selection.
  *
  * This class utilizes the `MutableTextDocument` for constructing a structured representation of the
  * parsed data.
  */
 class DomToDocumentReader {
-  private document: MutableTextDocument = new MutableTextDocument();
+  private readonly document: MutableTextDocument = new MutableTextDocument();
 
   /** Accumulator for the length of text parsed. */
   private textLength = 0;
@@ -60,7 +60,8 @@ class DomToDocumentReader {
   ) {}
 
   /**
-   * Factory method to create and utilize a `DOMParser` instance to extract text and selection data.
+   * Factory method to create and utilize a `DomToDocumentReader` instance to extract text and
+   * selection data.
    *
    * @param window - The browser window object.
    * @param element - The HTML element from which the text document should be extracted.
@@ -115,22 +116,17 @@ class DomToDocumentReader {
     let afterFocus = false;
     let afterAnchor = false;
     let withinSelection = false;
-    let foundSelection = false;
 
     const processNode = (el: Node) => {
       const elText = el.nodeValue ?? '';
       const isAnchorNode = selection.anchorNode === el;
       const isFocusNode = selection.focusNode === el;
 
-      if (!foundSelection && (isAnchorNode || isFocusNode)) {
-        foundSelection = true;
-      }
-
-      if ((isAnchorNode || isFocusNode) && !(el instanceof Text)) {
-        throw new Error('Not implemented');
-      }
-
       if (el.nodeType === Node.TEXT_NODE) {
+        // Note that this for loop extends one character past the end of the text node to account
+        // for the selection being at the end of the text node, and it is careful about indexing
+        // into the text node when the selection is at the end of the text node.
+        // skipcq: JS-S1016
         for (let i = 0; i <= elText.length; i++) {
           const char = i < elText.length ? elText[i] : '';
 

@@ -51,32 +51,28 @@ export function mutateSelectionInDom(element: HTMLElement, doc: TextDocument): v
    * @param {Node} node - The current node to be traversed.
    */
   function traverseNodes(node: Node): void {
-    if (node.nodeType === Node.TEXT_NODE) {
-      const textNode = node as Text;
-
-      // Check if the current text node contains the anchor
-      if (
-        currentPosition <= doc.anchorIndex &&
-        doc.anchorIndex <= currentPosition + textNode.length
-      ) {
-        anchorTextNode = textNode;
-        anchorOffset = doc.anchorIndex - currentPosition;
-      }
-
-      // Check if the current text node contains the focus
-      if (
-        currentPosition <= doc.focusIndex &&
-        doc.focusIndex <= currentPosition + textNode.length
-      ) {
-        focusTextNode = textNode;
-        focusOffset = doc.focusIndex - currentPosition;
-      }
-
-      currentPosition += textNode.length;
-    } else {
-      for (let i = 0; i < node.childNodes.length; i++) {
-        traverseNodes(node.childNodes[i]);
-      }
+    if (node.nodeType !== Node.TEXT_NODE) {
+      node.childNodes.forEach(traverseNodes);
+      return;
     }
+
+    const textNode = node as Text;
+
+    // Check if the current text node contains the anchor
+    if (
+      currentPosition <= doc.anchorIndex &&
+      doc.anchorIndex <= currentPosition + textNode.length
+    ) {
+      anchorTextNode = textNode;
+      anchorOffset = doc.anchorIndex - currentPosition;
+    }
+
+    // Check if the current text node contains the focus
+    if (currentPosition <= doc.focusIndex && doc.focusIndex <= currentPosition + textNode.length) {
+      focusTextNode = textNode;
+      focusOffset = doc.focusIndex - currentPosition;
+    }
+
+    currentPosition += textNode.length;
   }
 }
