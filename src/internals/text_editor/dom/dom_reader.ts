@@ -102,7 +102,7 @@ class DomToDocumentReader {
     ) {
       return (this.element.parentNode as Document).getSelection();
     }
-    return this.window.getSelection() || null;
+    return this.window.getSelection() ?? null;
   }
 
   /**
@@ -117,6 +117,11 @@ class DomToDocumentReader {
     let afterAnchor = false;
     let withinSelection = false;
 
+    /**
+     * A recursive DFT function to process a DOM node and its children.
+     *
+     * @param el The DOM node to process.
+     */
     const processNode = (el: Node) => {
       const elText = el.nodeValue ?? '';
       const isAnchorNode = selection.anchorNode === el;

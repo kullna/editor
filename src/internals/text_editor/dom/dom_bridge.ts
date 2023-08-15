@@ -54,6 +54,11 @@ export class DomBridge {
     this.pushToDOM(document);
   }
   private _document: TextDocument = new TextDocument(0, 0, '', true);
+  /**
+   * Updates the _document property and invokes all registered callbacks.
+   *
+   * @param document The new text document.
+   */
   private setDocumentWithChangeNotification(document: TextDocument) {
     if (document.strictEquals(this._document)) return;
 
@@ -77,6 +82,11 @@ export class DomBridge {
     return this._lineMetrics;
   }
   private _lineMetrics: LineMetric[] = [];
+  /**
+   * Updates the _lineMetrics property and invokes all registered callbacks.
+   *
+   * @param metrics The new line metrics.
+   */
   private setLineMetricsWithChangeNotification(metrics: LineMetric[]) {
     if (metrics !== this._lineMetrics) {
       this._lineMetrics = metrics;
