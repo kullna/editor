@@ -107,70 +107,123 @@ class DomToDocumentReader {
    */
   private extractSelectionFromDOM(selection: Selection | null): string {
     const textParts: string[] = [];
+    this.processHtmlNode(this.element, selection, textParts);
+    return textParts.join('');
+  }
 
-    /**
-     * A recursive DFT function to process a DOM node and its children.
-     *
-     * @param el The DOM node to process.
-     */
-    const processNode = (el: Node) => {
+  /**
+   * Handles processing of an arbitrary DOM node by delegating to the appropriate method based on
+   * the node type, or, otherwise, performing a recursive DFT on the node's children.
+   *
+   * @param el The DOM node to process.
+   * @param selection The browser selection, if any.
+   * @param textParts The mutable array of text parts we add text content to as we find it.
+   */
+  private processHtmlNode(el: Node, selection: Selection | null, textParts: string[]) {
+    const isAnchorNode = !selection ? false : selection.anchorNode === el;
+    const isFocusNode = !selection ? false : selection.focusNode === el;
+
+    if (el.nodeType === Node.TEXT_NODE) {
       let elText = el.nodeValue ?? '';
       elText = elText.replace(/\r|\n/g, '');
-      const isAnchorNode = !selection ? false : selection.anchorNode === el;
-      const isFocusNode = !selection ? false : selection.focusNode === el;
+      this.processTextNode(textParts, elText, isAnchorNode, selection, isFocusNode);
+      return;
+    }
 
-      if (el.nodeType === Node.TEXT_NODE) {
-        textParts.push(elText);
+    if (el.nodeName.toUpperCase() === 'BR') {
+      this.processBreak(textParts, isAnchorNode, isFocusNode);
+      return;
+    }
 
-        const anchorOffset = isAnchorNode && selection ? selection.anchorOffset : -1;
-        const focusOffset = isFocusNode && selection ? selection.focusOffset : -1;
+    if (
+      el.nodeName.toUpperCase() === 'DIV' ||
+      (el.nodeName.toUpperCase() === 'SPAN' &&
+        (el as HTMLElement).className === 'text-document-line')
+    ) {
+      this.processDivOrSpan(el, selection, textParts, isAnchorNode, isFocusNode);
+      return;
+    }
 
-        if (anchorOffset >= 0 && anchorOffset <= elText.length) {
-          this.document.anchorIndex = this.textLength + anchorOffset;
-        }
+    el.childNodes.forEach(child => {
+      this.processHtmlNode(child, selection, textParts);
+    });
+  }
 
-        if (focusOffset >= 0 && focusOffset <= elText.length) {
-          this.document.focusIndex = this.textLength + focusOffset;
-        }
+  /**
+   * Handles processing of a DIV or SPAN node.
+   *
+   * @param el The DIV or SPAN node to process.
+   * @param selection The browser selection, if any.
+   * @param textParts The mutable array of text parts we add text content to as we find it.
+   * @param isAnchorNode Is this the anchor node?
+   * @param isFocusNode Is this the focus node?
+   */
+  private processDivOrSpan(
+    el: Node,
+    selection: Selection | null,
+    textParts: string[],
+    isAnchorNode: boolean,
+    isFocusNode: boolean
+  ) {
+    el.childNodes.forEach(child => {
+      this.processHtmlNode(child, selection, textParts);
+    });
+    if (isAnchorNode) {
+      this.document.anchorIndex = this.textLength - 1;
+    }
+    if (isFocusNode) {
+      this.document.focusIndex = this.textLength - 1;
+    }
+  }
 
-        this.textLength += elText.length;
-      } else if (el.nodeName.toUpperCase() === 'BR') {
-        textParts.push('\n');
-        this.textLength += 1;
+  /**
+   * Handles processing of a break node.
+   *
+   * @param textParts The mutable array of text parts we add text content to as we find it.
+   * @param isAnchorNode Is this the anchor node?
+   * @param isFocusNode Is this the focus node?
+   */
+  private processBreak(textParts: string[], isAnchorNode: boolean, isFocusNode: boolean) {
+    textParts.push('\n');
+    this.textLength += 1;
 
-        if (selection) {
-          if (isAnchorNode) {
-            this.document.anchorIndex = this.textLength;
-          }
-          if (isFocusNode) {
-            this.document.focusIndex = this.textLength;
-          }
-        }
-      } else if (
-        el.nodeName.toUpperCase() === 'DIV' ||
-        (el.nodeName.toUpperCase() === 'SPAN' &&
-          (el as HTMLElement).className === 'text-document-line')
-      ) {
-        el.childNodes.forEach(child => {
-          processNode(child);
-        });
-        if (selection) {
-          if (isAnchorNode) {
-            this.document.anchorIndex = this.textLength - 1;
-          }
-          if (isFocusNode) {
-            this.document.focusIndex = this.textLength - 1;
-          }
-        }
-      } else {
-        el.childNodes.forEach(child => {
-          processNode(child);
-        });
-      }
-    };
+    if (isAnchorNode) {
+      this.document.anchorIndex = this.textLength;
+    }
+    if (isFocusNode) {
+      this.document.focusIndex = this.textLength;
+    }
+  }
 
-    processNode(this.element);
+  /**
+   * Handles processing of a text node.
+   *
+   * @param textParts The mutable array of text parts we add text content to as we find it.
+   * @param elText The text of the current node.
+   * @param isAnchorNode Is this the anchor node?
+   * @param selection Did a selection exist?
+   * @param isFocusNode Is this the focus node?
+   */
+  private processTextNode(
+    textParts: string[],
+    elText: string,
+    isAnchorNode: boolean,
+    selection: Selection | null,
+    isFocusNode: boolean
+  ) {
+    textParts.push(elText);
 
-    return textParts.join('');
+    const anchorOffset = isAnchorNode && selection ? selection.anchorOffset : -1;
+    const focusOffset = isFocusNode && selection ? selection.focusOffset : -1;
+
+    if (anchorOffset >= 0 && anchorOffset <= elText.length) {
+      this.document.anchorIndex = this.textLength + anchorOffset;
+    }
+
+    if (focusOffset >= 0 && focusOffset <= elText.length) {
+      this.document.focusIndex = this.textLength + focusOffset;
+    }
+
+    this.textLength += elText.length;
   }
 }

@@ -157,7 +157,7 @@ export class DomBridge {
     for (let i = 0; i < lineContainers.length; i++) {
       const lineContainer = lineContainers[i] as HTMLElement;
       if (
-        i != lineContainers.length - 1 &&
+        i !== lineContainers.length - 1 &&
         (lineContainer.childNodes.length === 0 ||
           (lineContainer.lastChild !== null && lineContainer.lastChild.nodeName !== 'BR'))
       ) {

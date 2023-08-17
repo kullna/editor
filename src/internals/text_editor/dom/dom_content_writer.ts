@@ -33,10 +33,6 @@ class DocumentToDomWriter {
     private readonly document: TextDocument
   ) {}
 
-  private inInclusiveRange(index: number, from: number, to: number): boolean {
-    return from <= index && index <= to;
-  }
-
   /** Writes the document to the DOM. */
   write(): void {
     // Store initial scroll position
@@ -51,26 +47,16 @@ class DocumentToDomWriter {
     let position = 0;
     for (let i = 0; i < lines.length; i++) {
       const currentLine = lines[i];
-      // Danger, don't ever allow the selection to be inclusive of the
-      // ending fencepost of this line including the newline  or the cursor
-      // will be in an invalid state for the DOM and won't work across
-      // browsers reliably.)
-      // Here, for the line "hello", it can be at index 5, but not 6.
-      // 0h1e2l3l4o5\n6
-      // Fortunately, the newline characters are gone as an artifact of
-      // splitting the text into lines, so we don't have to worry about
-      // adding one - but... don't be tempted to add one!
-      // currentLine doesn't include the newlines at the end of each line.
-      // So, here, we use position + currentLine.length (5 in the example above)
-      // to determine if the selection is at the end of the line, and accept
-      // any "earliest index" that is equal to or less than that.
-      const startsOnLine = this.inInclusiveRange(
+      // Danger, don't ever allow the selection to be inclusive of the position
+      // to the right of the new line position. That position is owned by the
+      // next line.
+      const startsOnLine = inInclusiveRange(
         this.document.earliestIndex,
         position,
         position + currentLine.length
       );
 
-      const endsOnLine = this.inInclusiveRange(
+      const endsOnLine = inInclusiveRange(
         this.document.latestIndex,
         position,
         position + currentLine.length
@@ -128,6 +114,17 @@ class DocumentToDomWriter {
   private _selectionEndsInElement: Node | null = null;
   private _selectionEndsAtOffset: number = 0;
 
+  /**
+   * Determines how to deal with the selection in a line, and eventually writes it to the DOM.
+   *
+   * @param startsOnLine True if the selection starts on this line.
+   * @param endsOnLine True if the selection ends on this line.
+   * @param currentLine The text of the line to write.
+   * @param safeEarliest The earliest index of the selection in the document.
+   * @param position The position of the line in the document.
+   * @param safeLatest The latest index of the selection in the document.
+   * @param hasNewLine True if the line has a newline at the end.
+   */
   private handleLine(
     startsOnLine: boolean,
     endsOnLine: boolean,
@@ -150,7 +147,7 @@ class DocumentToDomWriter {
       const startPart = currentLine.slice(0, safeLatest - position);
       const endPart = currentLine.slice(safeLatest - position);
       this._writeSelectionEndsLine(startPart, endPart, hasNewLine);
-    } else if (this.inInclusiveRange(position, safeEarliest, safeLatest + 1)) {
+    } else if (inInclusiveRange(position, safeEarliest, safeLatest + 1)) {
       this._writeSelectedLine(currentLine, hasNewLine);
     } else if (position < safeEarliest) {
       this._writeLineBeforeSelection(currentLine, hasNewLine);
@@ -159,6 +156,13 @@ class DocumentToDomWriter {
     }
   }
 
+  /**
+   * Constructs a new DOM element for a line and adds it to the DOM.
+   *
+   * @param line The text of the line to add.
+   * @param withBreak Whether or not to add a line break after the line.
+   * @returns The element that was added to the DOM.
+   */
   private _addLine(line: string, withBreak: boolean): HTMLElement {
     const lineContainer = document.createElement('span');
     lineContainer.className = 'text-document-line';
@@ -170,28 +174,68 @@ class DocumentToDomWriter {
     return lineContainer;
   }
 
+  /**
+   * Writes a line that occurs before the selection begins.
+   *
+   * @param text The text of the line to write.
+   * @param withBreak Whether or not to add a line break after the line.
+   */
   private _writeLineBeforeSelection(text: string, withBreak: boolean) {
     this._addLine(text, withBreak);
   }
 
+  /**
+   * Writes a line that occurs after the selection ends.
+   *
+   * @param text The text of the line to write.
+   * @param withBreak Whether or not to add a line break after the line.
+   */
   private _writeLineAfterSelection(text: string, withBreak: boolean) {
     this._addLine(text, withBreak);
   }
 
+  /**
+   * Writes a line that is entirely selected.
+   *
+   * @param text The text of the line to write.
+   * @param withBreak Whether or not to add a line break after the line.
+   */
   private _writeSelectedLine(text: string, withBreak: boolean) {
     this._addLine(text, withBreak);
   }
 
+  /**
+   * Writes a line that contains the beginning of the selection (but not the end).
+   *
+   * @param start The text before the selection.
+   * @param end The text after the selection.
+   * @param withBreak Whether or not to add a line break after the line.
+   */
   private _writeSelectionBeginsLine(start: string, end: string, withBreak: boolean) {
     this._selectionBeginsInElement = this._addLine(start + end, withBreak).childNodes[0];
     this._selectionBeginsAtOffset = start.length;
   }
 
+  /**
+   * Writes a line that contains the end of the selection (but not the beginning).
+   *
+   * @param start The text before the selection ends.
+   * @param end The text after the selection ends.
+   * @param withBreak Whether or not to add a line break after the line.
+   */
   private _writeSelectionEndsLine(start: string, end: string, withBreak: boolean) {
     this._selectionEndsInElement = this._addLine(start + end, withBreak).childNodes[0];
     this._selectionEndsAtOffset = start.length;
   }
 
+  /**
+   * Writes a line that contains both the beginning and end of the selection.
+   *
+   * @param start The text before the selection.
+   * @param selection The text that is selected.
+   * @param end The text after the selection.
+   * @param withBreak Whether or not to add a line break after the line.
+   */
   private _writeSelectionBeginsAndEndsLine(
     start: string,
     selection: string,
@@ -239,4 +283,16 @@ class DocumentToDomWriter {
       );
     }
   }
+}
+
+/**
+ * Determines if the given index is in the range [from, to].
+ *
+ * @param index The index to check.
+ * @param from The start of the range.
+ * @param to The end of the range.
+ * @returns True if the index is in the range, false otherwise.
+ */
+function inInclusiveRange(index: number, from: number, to: number): boolean {
+  return from <= index && index <= to;
 }
