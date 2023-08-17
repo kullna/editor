@@ -1,7 +1,7 @@
 {
   "name": "@kullna/editor",
   "description": "A small but feature-rich code editor for the web",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "type": "module",
   "main": "./dist/kullna-editor.esm.js",
   "types": "./dist/index.d.ts",
