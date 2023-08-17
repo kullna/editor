@@ -33,6 +33,10 @@ export class ThrottledAction {
     private readonly delay: number
   ) {}
 
+  /**
+   * Triggers the action. If the action has already been triggered within the delay window, it won't
+   * be triggered again until the delay window has passed.
+   */
   trigger() {
     if (this.timeout) {
       // If there's an active timeout, it means we're within the delay window.
@@ -40,21 +44,17 @@ export class ThrottledAction {
       this.shouldExecuteAfterDelay = true;
     } else {
       // If there's no active timeout, execute the action immediately and start a delay.
-      this.executeAction();
+      this.action();
       this.timeout = window.setTimeout(() => {
-        // After the delay, check if there was another trigger during the delay window.
-        if (this.shouldExecuteAfterDelay) {
-          this.executeAction();
-        }
         // Reset the state.
         clearTimeout(this.timeout);
         this.timeout = undefined;
         this.shouldExecuteAfterDelay = false;
+        // After the delay, check if there was another trigger during the delay window.
+        if (this.shouldExecuteAfterDelay) {
+          this.trigger();
+        }
       }, this.delay);
     }
-  }
-
-  private executeAction() {
-    this.action();
   }
 }

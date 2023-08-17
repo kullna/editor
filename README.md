@@ -1,11 +1,14 @@
 <p align="center"><a href="https://editor.kullna.org/"><img src="https://www.kullna.org/brand/logo.svg" width="150"></a></p>
 <h1 align="center">@kullna/editor</h1>
 <h3 align="center">A small but feature-rich code editor for the web</h3>
-<p align="center"><img src="https://editor.kullna.org/assets/images/screenshot.png" width="724" alt="screenshot"></p>
+<p align="center"><img src="https://editor.kullna.org/assets/images/screenshot.png" style="image-rendering: pixelated;" width="698" alt="screenshot"></p>
 <p align="center">
     <a href="https://editor.kullna.org/demo.html">🔍 Demos</a> •
     <a href="https://editor.kullna.org/modules.html">📖 Docs</a> •
     <a href="https://editor.kullna.org/pages/CONTRIBUTING.html">🙌 Contribute</a>
+</p>
+<p align="center">
+<iframe src="https://ghbtns.com/github-btn.html?user=kullna&repo=editor&type=star&count=false&size=large" frameborder="0" scrolling="0" width="70" height="30" title="GitHub"></iframe>
 </p>
 <p align="center">
     <a href="https://cdn.jsdelivr.net/npm/@kullna/editor/dist/kullna-editor.min.js">
@@ -17,9 +20,6 @@
     <img src="https://deno.bundlejs.com/?q=@kullna/editor&badge=small" alt="npm bundle size">
     <a href="https://www.gnu.org/licenses/lgpl-3.0">
         <img src="https://img.shields.io/badge/License-LGPL_v3-b58900.svg" alt="License: LGPL v3">
-    </a>
-    <a href="https://github.com/kullna/editor">
-        <img src="https://img.shields.io/badge/Source-GitHub-d33682" alt="Source on GitHub">
     </a>
     <a href="https://www.codefactor.io/repository/github/kullna/editor">
         <img src="https://www.codefactor.io/repository/github/kullna/editor/badge" alt="CodeFactor">
@@ -54,6 +54,7 @@ your feedback and contributions.
 - ⏪ **Undo/Redo**: Offers customizable undo/redo levels.
 - ✂️ **Copy-Paste**: Ensure consistent cross-browser cut, copy, and paste operations in an
   XSS-secure way.
+- 🎁 **Wrapping**: Wrap text, and keep line numbers and highlights in sync.
 - 🖊️ **Bracket Management**: Automatic close-bracket and close-quote insertion, with type-over
   capability.
 - ➡️ **Code Indentation**: Flexible code indentation using tab or shift-tab. Supports multi-line

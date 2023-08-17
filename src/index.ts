@@ -108,7 +108,6 @@ export function createEditor(
     bracketProcessor: {
       enabled: true
     },
-    gutter: {},
     ...opt
   };
 
@@ -153,13 +152,13 @@ export function createEditor(
   const editorOptions: Partial<EditorOptions> = {
     window: options.window,
     dir: options.dir,
-    gutter: {
-      ...options.gutter
-    },
     highlight: options.highlightElement,
     keydownPipeline,
     keyupPipeline: options.keyupPipeline ?? []
   };
+  if (options.gutter) {
+    editorOptions.gutter = options.gutter;
+  }
 
   return new Editor(parent, editorOptions);
 }

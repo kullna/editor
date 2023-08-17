@@ -41,7 +41,9 @@ export function mutateSelectionInDom(element: HTMLElement, doc: TextDocument): v
   // Set the selection
   if (anchorTextNode && focusTextNode) {
     const selection = window.getSelection();
-    selection?.setBaseAndExtent(anchorTextNode, anchorOffset, focusTextNode, focusOffset);
+    if (selection) {
+      selection.setBaseAndExtent(anchorTextNode, anchorOffset, focusTextNode, focusOffset);
+    }
   }
 
   /**
@@ -73,6 +75,6 @@ export function mutateSelectionInDom(element: HTMLElement, doc: TextDocument): v
       focusOffset = doc.focusIndex - currentPosition;
     }
 
-    currentPosition += textNode.length;
+    currentPosition += textNode.length + 1;
   }
 }

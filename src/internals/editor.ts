@@ -108,6 +108,7 @@ export class Editor
 
     this.undoRedoManager = new UndoRedoManager(this);
     this.view = new TextEditorView(options.window, parent, this);
+    this.view.gutterWidth = this.gutter ? this.gutter.width : '0px';
     this.view.spellchecking = options.spellcheck;
     this.view.dir = options.dir;
     this.view.onLineMetricsChanged = metrics => {
