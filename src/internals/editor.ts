@@ -145,6 +145,14 @@ export class Editor
   }
 
   /** @inheritDoc */
+  get readonly(): boolean {
+    return this.view.readonly;
+  }
+  set readonly(readonly: boolean) {
+    this.view.readonly = readonly;
+  }
+
+  /** @inheritDoc */
   get language(): string {
     return this.view.language;
   }

@@ -102,6 +102,14 @@
         right: 0;
       }
 
+      .execution-highlight {
+        background-color: #b5890077;
+        opacity: 0.6;
+        position: absolute;
+        left: 0;
+        right: 0;
+      }
+
       .code-gutter-highlight {
         background-color: #ffffff22;
         position: absolute;
@@ -336,6 +344,53 @@ end function`
 );`
         );
         noGutter.wrapsText = true;
+
+        const readonlyEditor = demoWithOptions(
+          '#demos',
+          'readonly',
+          'Readonly Configuration',
+          {
+            language: 'html',
+            highlightElement: e => {
+              hljs.highlightElement(e);
+              e.style.backgroundColor = 'transparent';
+            },
+            gutter: {
+              border: true,
+              width: '55px',
+              class: 'code-gutter',
+              renderGutterLine: (lineNumber, gutterLineElement) => {
+                gutterLineElement.accessorySpan.innerHtml = '';
+                if (lineNumber === 4) {
+                  const breakpoint = document.createElement('div');
+                  breakpoint.classList.add('breakpoint');
+                  gutterLineElement.accessorySpan.appendChild(breakpoint);
+                }
+              }
+            }
+          },
+          `<div id="editor"><\/div>
+...
+<script>
+  const editor = KullnaEditor.createEditor('#editor', {
+    language: 'javascript',
+    highlight: hljs.highlightElement,
+    gutter: {
+      backgroundColor: "var(--sd-base02)",
+      color: "var(--sd-base0)",
+    }
+  });
+<\/script>`
+        );
+        readonlyEditor.wrapsText = false;
+        readonlyEditor.readonly = true;
+        const readonlyEditorHighlight = readonlyEditor.createHighlight();
+        readonlyEditorHighlight.lineNumber = 6;
+        readonlyEditorHighlight.visible = true;
+        readonlyEditorHighlight.cssClass = 'execution-highlight';
+        setInterval(() => {
+          readonlyEditorHighlight.lineNumber = (readonlyEditorHighlight.lineNumber + 1) % 10;
+        }, 1000);
       };
     </script>
     <script

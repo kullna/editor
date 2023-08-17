@@ -115,7 +115,18 @@
   "keywords": [
     "code-editor",
     "text-editor",
-    "browser"
+    "browser",
+    "javascript",
+    "syntax-highlighting",
+    "editor",
+    "typescript",
+    "web",
+    "code",
+    "contenteditable",
+    "code-editor",
+    "rtl",
+    "breakpoints",
+    "line-numbers"
   ],
   "bugs": {
     "url": "https://github.com/kullna/editor/issues"
