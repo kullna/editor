@@ -82,6 +82,10 @@ export interface KullnaEditor {
   get spellcheck(): boolean;
   set spellcheck(spellcheck: boolean);
 
+  /** Gets or sets whether the editor is readonly. */
+  get readonly(): boolean;
+  set readonly(readonly: boolean);
+
   /**
    * The programming language of the editor's content. This is used to determine the syntax
    * highlighting strategy by common libraries like Highlight.js and Prism.js.

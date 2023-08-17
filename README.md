@@ -8,7 +8,9 @@
     <a href="https://editor.kullna.org/pages/CONTRIBUTING.html">🙌 Contribute</a>
 </p>
 <p align="center">
-<iframe src="https://ghbtns.com/github-btn.html?user=kullna&repo=editor&type=star&count=false&size=large" frameborder="0" scrolling="0" width="70" height="30" title="GitHub"></iframe>
+    <a href="https://github.com/kullna/editor">
+        <img src="https://img.shields.io/badge/GitHub-Open_Source-d33682" alt="@kullna/editor on GitHub">
+    </a>
 </p>
 <p align="center">
     <a href="https://cdn.jsdelivr.net/npm/@kullna/editor/dist/kullna-editor.min.js">

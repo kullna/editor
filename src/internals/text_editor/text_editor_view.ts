@@ -143,6 +143,31 @@ export class TextEditorView {
   private _language: string = 'text';
 
   /**
+   * The programming language code that the editor is currently using for syntax highlighting.
+   *
+   * @returns The programming language code that the editor is currently using for syntax
+   *   highlighting.
+   */
+  get readonly(): boolean {
+    return this._readonly;
+  }
+  set readonly(readonly: boolean) {
+    if (this.element) {
+      this.element.setAttribute('readonly', readonly ? 'true' : 'false');
+      if (readonly) {
+        this.element.setAttribute('contenteditable', 'false');
+      } else {
+        this.element.setAttribute('contenteditable', 'plaintext-only');
+        if (this.element.contentEditable !== 'plaintext-only') {
+          this.element.setAttribute('contenteditable', 'true');
+        }
+      }
+    }
+    this._readonly = readonly;
+  }
+  private _readonly: boolean = false;
+
+  /**
    * Whether spellchecking is currently enabled.
    *
    * @returns Whether spellchecking is currently enabled.
