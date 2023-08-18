@@ -37,6 +37,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. */
  * }
  * ```
  *
+ * Set the class the gutter uses by providing a `class` option to {@link Options.gutter}:
+ *
+ * ```js
+ * const editor = createEditor('#editor', {
+ *   gutter: {
+ *     class: 'gutter'
+ *   }
+ * });
+ * ```
+ *
  * To customize the width of the gutter, use the Javascript API:
  *
  * ```js
@@ -51,20 +61,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. */
  *
  * Beyond CSS, you can modify the gutter using JavaScript. This is achieved by providing a `GutterCustomizer` to the `renderGutterLine` option within {@link Options.gutter}. This function lets you modify the `GutterLineElement` in the DOM, facilitating additions like breakpoints and other gutter features.
  *
- * For additional details, refer to {@link GutterCustomizer}.
- *
- * ```
- *       .breakpoint {
- *         background-color: var(--sd-red);
- *         position: absolute;
- *         border-radius: 50%;
- *         width: 0.8em;
- *         height: 0.8em;
- *         display: inline-flex;
- *         margin-left: -38px;
- *         margin-top: 5px;
- *       }
- * ```
+ * For additional details, including examples, refer to {@link GutterCustomizer}.
  */
 
 export {GutterLineElement} from './line';
