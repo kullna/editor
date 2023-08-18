@@ -31,19 +31,18 @@ export {type InputProcessor} from './internals/pipeline';
  * but they are included here for your reference:
  *
  * ```js
- * const element = document.getElementById('editor');
- * const editor = KullnaEditor.createEditor(element, {
+ * const editor = KullnaEditor.createEditor('#editor', {
  *     window,
+ *     dir: 'ltr',
  *     tab: '  ',
  *     language: 'javascript',
  *     highlightElement: hljs.highlightElement,
- *     dir: 'ltr',
  *     maxUndoHistory: 300,
  *     gutter: {
- *         width: '55px',
- *         dir: 'ltr',
  *         class: 'gutter',
- *         customizer: (line, element) => {
+ *         width: '55px',
+ *         border: false,
+ *         renderGutterLine: (line, element) => {
  *             // Customize the line numbers in the gutter
  *         },
  *     },
@@ -62,10 +61,12 @@ export {type InputProcessor} from './internals/pipeline';
  *         replacement ? : DefaultProcessors.enter({...
  *         })
  *     },
- *     keydownProcessor: {
- *         replacement: DefaultProcessors.keydown({...
+ *     bracketProcessor: {
+ *         replacement: DefaultProcessors.bracket({...
  *         })
- *     }
+ *     },
+ *     keydownPipeline: [ ... ],
+ *     keyupPipeline: [ ... ]
  * });
  * ```
  */
@@ -94,6 +95,9 @@ export interface Options {
    * from the processor configurations to here.
    */
   tab: string;
+
+  /** The language to use for syntax highlighting. */
+  language?: string;
 
   /**
    * The syntax highlighting function. This function is called whenever the editor's text changes

@@ -87,11 +87,12 @@ export class Editor
     };
     this.options = options;
 
-    parent.style.position = 'relative';
+    this.undoRedoManager = new UndoRedoManager(this);
+
     parent.style.overflow = 'hidden';
     parent.dir = options.dir;
 
-    this.highlightView = new HighlightView(parent, 99);
+    this.view = new TextEditorView(options.window, parent, this);
 
     if (options.gutter) {
       // Default gutter options if not specified:
@@ -102,12 +103,20 @@ export class Editor
       // Construct the gutter element
       const gutter = new Gutter(options.gutter);
       this.gutter = gutter;
-      parent.appendChild(gutter.element);
+      parent.insertBefore(gutter.element, this.view.contentEditableSurface);
       gutter.dir = options.dir;
     }
 
-    this.undoRedoManager = new UndoRedoManager(this);
-    this.view = new TextEditorView(options.window, parent, this);
+    const highlightViewContainer = this.options.window.document.createElement('div');
+    highlightViewContainer.style.position = 'absolute';
+    highlightViewContainer.style.top = '0';
+    highlightViewContainer.style.left = '0';
+    highlightViewContainer.style.right = '0';
+    highlightViewContainer.style.bottom = '0';
+    highlightViewContainer.style.overflow = 'hidden';
+    parent.insertBefore(highlightViewContainer, this.view.contentEditableSurface);
+    this.highlightView = new HighlightView(highlightViewContainer);
+
     this.view.gutterWidth = this.gutter ? this.gutter.width : '0px';
     this.view.spellchecking = options.spellcheck;
     this.view.dir = options.dir;

@@ -28,6 +28,28 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. */
  * - Lines with bookmarks
  * - Lines with TODOs
  *
+ * ## Creating a highlight
+ *
+ * Create a reactive highlight object with {@link KullnaEditor.createHighlight}:
+ *
+ * ```js
+ * const highlight = editor.createHighlight();
+ * highlight.cssClass = 'highlight';
+ * highlight.lineNumber = 1;
+ * highlight.visible = true;
+ * ```
+ *
+ * Changing the properties of the highlight will automatically update the editor.
+ *
+ * ## Deleting a highlight
+ *
+ * When you no longer want a highlight, and changing its visibility is not enough,
+ * you can delete it entirely:
+ *
+ * ```js
+ * highlight.delete();
+ * ```
+ *
  * See the {@link Highlight} interface for more information.
  */
 export {Highlight} from './highlight';

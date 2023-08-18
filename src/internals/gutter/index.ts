@@ -30,28 +30,38 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. */
  * and border colors:
  *
  * ```css
- * background-color: #f0f0f0;
- * border-color: #d0d0d0;
- * color: #606060;
+ * #editor .gutter {
+ *   background-color: #002b36;
+ *   border-color: #93a1a1;
+ *   color: #93a1a1;
+ * }
+ * ```
+ *
+ * Set the class the gutter uses by providing a `class` option to {@link Options.gutter}:
+ *
+ * ```js
+ * const editor = createEditor('#editor', {
+ *   gutter: {
+ *     class: 'gutter'
+ *   }
+ * });
+ * ```
+ *
+ * To customize the width of the gutter, use the Javascript API:
+ *
+ * ```js
+ * const editor = createEditor('#editor', {
+ *   gutter: {
+ *     width: '100px'
+ *   }
+ * });
  * ```
  *
  * ### JavaScript Customization
  *
  * Beyond CSS, you can modify the gutter using JavaScript. This is achieved by providing a `GutterCustomizer` to the `renderGutterLine` option within {@link Options.gutter}. This function lets you modify the `GutterLineElement` in the DOM, facilitating additions like breakpoints and other gutter features.
  *
- * For additional details, refer to {@link GutterCustomizer}.
- *
- * ## Development Notes
- *
- * 💡 **Note:** **Management by `@kullna/editor`**: The editor handles creating and maintaining
- *  the DOM elements within the gutter. This approach anticipates future optimization
- * where we aim to manage gutter elements more efficiently by reusing them, rather than
- *  creating new ones every time the line count in the editor changes. This strategy
- * requires the editor to have complete control over these gutter elements. Presently,
- * the gutter also determines the line's location within the editor, crucial for line
- * numbers and highlighting - however, this source of truth will shift to the internals
- * of the selection bridge in the future, as it knows the line's location within the
- * editor already, and defininitively.
+ * For additional details, including examples, refer to {@link GutterCustomizer}.
  */
 
 export {GutterLineElement} from './line';

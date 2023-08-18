@@ -148,7 +148,6 @@ export class Gutter {
     };
     this.element = document.createElement('div');
     this.element.style.position = 'absolute';
-    this.element.style.zIndex = '50';
     this.element.style.top = '0px';
     this.element.style.bottom = '0px';
     this.element.style.overflow = 'hidden';
