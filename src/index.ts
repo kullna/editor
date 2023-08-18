@@ -71,12 +71,21 @@ const DEFAULT_TAB_CHARACTERS = '  ';
  * Here is a typical example of how to create an editor:
  *
  * ```js
- * const editor = KullnaEditor.createEditor('#editor', {
+ * import {createEditor} from '@kullna/editor';
+ *
+ * const editor = createEditor('#editor', {
  *   language: 'javascript',
- *   highlightElement: hljs.highlightElement
+ *   // This tells the editor to use Highlight.JS for syntax highlighting:
+ *   highlightElement: hljs.highlightElement,
+ *   // This tells the editor to show a gutter with line numbers and a border:
+ *   gutter: {
+ *     border: true,
+ *     class: 'gutter'
+ *   }
  * });
+ * // Warning! Disabling spellcheck will disable spellcheck for the entire page.
  * editor.spellcheck = false;
- * editor.code = 'console.log("Hello, world!");';
+ * editor.wrapsText = true;
  * ```
  *
  * For a list of features and options you can change after creating the editor, see the
@@ -158,6 +167,9 @@ export function createEditor(
   };
   if (options.gutter) {
     editorOptions.gutter = options.gutter;
+  }
+  if (options.language) {
+    editorOptions.language = options.language;
   }
 
   return new Editor(parent, editorOptions);

@@ -30,6 +30,24 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. */
  *
  * Set the visibility of the highlight with `highlight.visible` (see: {@link Highlight.visible}).
  * This will show or hide the highlight.
+ *
+ * ## Example
+ *
+ * ```js
+ * const highlight = editor.createHighlight();
+ * highlight.cssClass = 'highlight';
+ * highlight.lineNumber = 1;
+ * highlight.visible = true;
+ * ```
+ *
+ * ## Example CSS:
+ *
+ * ```css
+ * .highlight {
+ *   /* semi-transparent yellow highlight * /
+ *   background-color: #b5890066;
+ * }
+ * ```
  */
 export interface Highlight {
   /** The line number to highlight. */

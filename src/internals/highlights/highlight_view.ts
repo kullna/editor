@@ -31,12 +31,8 @@ export class HighlightView {
    * Creates a new highlight manager.
    *
    * @param parent The parent element to append the highlight container to.
-   * @param zIndex The z-index of the highlight container.
    */
-  constructor(
-    parent: HTMLElement,
-    readonly zIndex: number
-  ) {
+  constructor(parent: HTMLElement) {
     this.highlightContainerView = parent;
   }
 
@@ -83,7 +79,7 @@ class HighlightLineView implements Highlight {
   private readonly highlightElement: HTMLElement;
 
   constructor(private readonly manager: HighlightView) {
-    this.highlightElement = createHighlightElement(manager.zIndex);
+    this.highlightElement = createHighlightElement();
     this.manager.highlightContainerView.appendChild(this.highlightElement);
   }
 
@@ -142,10 +138,9 @@ class HighlightLineView implements Highlight {
 /**
  * Creates a new DOM element that represents a horizontal highlight.
  *
- * @param zIndex The z-index of the highlight.
  * @returns A DOM element that represents a horizontal highlight.
  */
-function createHighlightElement(zIndex: number): HTMLElement {
+function createHighlightElement(): HTMLElement {
   const highlight = document.createElement('div');
   highlight.className = 'highlight';
   highlight.style.position = 'absolute';
@@ -153,7 +148,6 @@ function createHighlightElement(zIndex: number): HTMLElement {
   highlight.style.right = '0px';
   highlight.style.margin = '0px';
   highlight.style.padding = '0px';
-  highlight.style.zIndex = `${zIndex}`;
   highlight.innerHTML = '&nbsp;';
   return highlight;
 }

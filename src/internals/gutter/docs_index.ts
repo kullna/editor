@@ -21,17 +21,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. */
  * the DOM elements within the gutter. This approach anticipates future optimization
  * where we aim to manage gutter elements more efficiently by reusing them, rather than
  *  creating new ones every time the line count in the editor changes. This strategy
- * requires the editor to have complete control over these gutter elements. Presently,
- * the gutter also determines the line's location within the editor, crucial for line
- * numbers and highlighting - however, this source of truth will shift to the internals
- * of the selection bridge in the future, as it knows the line's location within the
- * editor already, and defininitively.
- *
- * Currently line highlighting is handled by the gutter, but this will change in the future
- * when we have a better, more flexible, and more performant way of tracking line heights
- * and positions.
+ * requires the editor to have complete control over these gutter elements.
  */
-
 export {GutterLineElement} from './line';
 export {GutterCustomizer} from './customizer';
 export {Gutter} from './gutter';

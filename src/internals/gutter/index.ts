@@ -30,9 +30,21 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. */
  * and border colors:
  *
  * ```css
- * background-color: #f0f0f0;
- * border-color: #d0d0d0;
- * color: #606060;
+ * #editor .gutter {
+ *   background-color: #002b36;
+ *   border-color: #93a1a1;
+ *   color: #93a1a1;
+ * }
+ * ```
+ *
+ * To customize the width of the gutter, use the Javascript API:
+ *
+ * ```js
+ * const editor = createEditor('#editor', {
+ *   gutter: {
+ *     width: '100px'
+ *   }
+ * });
  * ```
  *
  * ### JavaScript Customization
@@ -41,17 +53,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. */
  *
  * For additional details, refer to {@link GutterCustomizer}.
  *
- * ## Development Notes
- *
- * 💡 **Note:** **Management by `@kullna/editor`**: The editor handles creating and maintaining
- *  the DOM elements within the gutter. This approach anticipates future optimization
- * where we aim to manage gutter elements more efficiently by reusing them, rather than
- *  creating new ones every time the line count in the editor changes. This strategy
- * requires the editor to have complete control over these gutter elements. Presently,
- * the gutter also determines the line's location within the editor, crucial for line
- * numbers and highlighting - however, this source of truth will shift to the internals
- * of the selection bridge in the future, as it knows the line's location within the
- * editor already, and defininitively.
+ * ```
+ *       .breakpoint {
+ *         background-color: var(--sd-red);
+ *         position: absolute;
+ *         border-radius: 50%;
+ *         width: 0.8em;
+ *         height: 0.8em;
+ *         display: inline-flex;
+ *         margin-left: -38px;
+ *         margin-top: 5px;
+ *       }
+ * ```
  */
 
 export {GutterLineElement} from './line';

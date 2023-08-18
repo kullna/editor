@@ -30,10 +30,16 @@ import {TextDocument} from './internals/text_editor';
  *
  * const editor = createEditor('#editor', {
  *   language: 'javascript',
- *   highlightElement: hljs.highlightElement
+ *   // This tells the editor to use Highlight.JS for syntax highlighting:
+ *   highlightElement: hljs.highlightElement,
+ *   // This tells the editor to show a gutter with line numbers and a border:
+ *   gutter: {
+ *     border: true,
+ *     class: 'gutter'
+ *   }
  * });
+ * // Warning! Disabling spellcheck will disable spellcheck for the entire page.
  * editor.spellcheck = false;
- * editor.code = 'print("Hello, world!")';
  * ```
  *
  * See the Package Documentation {@link @kullna/editor} for more information.

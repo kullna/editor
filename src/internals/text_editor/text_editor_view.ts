@@ -78,10 +78,10 @@ export class TextEditorView {
   highlightElement?: (element: HTMLElement) => void;
 
   /** The constructed content-editable element. */
-  private element?: HTMLElement;
+  contentEditableSurface: HTMLElement;
 
   /** The syntax-highlighted text. */
-  private readonly _formattedDisplay: HTMLElement;
+  formattedTextSurface: HTMLElement;
 
   /** The listeners that have been added to the element. */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -134,10 +134,8 @@ export class TextEditorView {
     return this._language;
   }
   set language(lang: string) {
-    if (this.element) {
-      this.element.classList.replace(`language-${this._language}`, `language-${lang}`);
-      this._formattedDisplay.classList.replace(`language-${this._language}`, `language-${lang}`);
-    }
+    this.contentEditableSurface.classList.replace(`language-${this._language}`, `language-${lang}`);
+    this.formattedTextSurface.classList.replace(`language-${this._language}`, `language-${lang}`);
     this._language = lang;
   }
   private _language: string = 'text';
@@ -152,16 +150,12 @@ export class TextEditorView {
     return this._readonly;
   }
   set readonly(readonly: boolean) {
-    if (this.element) {
-      this.element.setAttribute('readonly', readonly ? 'true' : 'false');
-      if (readonly) {
-        this.element.setAttribute('contenteditable', 'false');
-      } else {
-        this.element.setAttribute('contenteditable', 'plaintext-only');
-        if (this.element.contentEditable !== 'plaintext-only') {
-          this.element.setAttribute('contenteditable', 'true');
-        }
-      }
+    this.contentEditableSurface.setAttribute('readonly', readonly ? 'true' : 'false');
+    if (readonly) {
+      this.contentEditableSurface.setAttribute('contenteditable', 'false');
+    } else {
+      this.contentEditableSurface.setAttribute('contenteditable', 'plaintext-only');
+      this.contentEditableSurface.setAttribute('contenteditable', 'true');
     }
     this._readonly = readonly;
   }
@@ -176,18 +170,16 @@ export class TextEditorView {
     return this._spellchecking;
   }
   set spellchecking(spellcheck: boolean) {
-    if (this.element) {
-      this.element.setAttribute('spellcheck', spellcheck ? 'true' : 'false');
-      this.element.setAttribute('autocapitalize', spellcheck ? 'on' : 'off');
-      this.element.setAttribute('autocomplete', spellcheck ? 'on' : 'off');
-      this.element.setAttribute('autocorrect', spellcheck ? 'on' : 'off');
-      if (!spellcheck) {
-        this.element.setAttribute('lang', 'klingon');
-        this._formattedDisplay.setAttribute('lang', 'klingon');
-      } else {
-        this.element.removeAttribute('lang');
-        this._formattedDisplay.removeAttribute('lang');
-      }
+    this.contentEditableSurface.setAttribute('spellcheck', spellcheck ? 'true' : 'false');
+    this.contentEditableSurface.setAttribute('autocapitalize', spellcheck ? 'on' : 'off');
+    this.contentEditableSurface.setAttribute('autocomplete', spellcheck ? 'on' : 'off');
+    this.contentEditableSurface.setAttribute('autocorrect', spellcheck ? 'on' : 'off');
+    if (!spellcheck) {
+      this.contentEditableSurface.setAttribute('lang', 'klingon');
+      this.formattedTextSurface.setAttribute('lang', 'klingon');
+    } else {
+      this.contentEditableSurface.removeAttribute('lang');
+      this.formattedTextSurface.removeAttribute('lang');
     }
     this._spellchecking = spellcheck;
   }
@@ -202,10 +194,8 @@ export class TextEditorView {
     return this._dir;
   }
   set dir(dir: 'ltr' | 'rtl') {
-    if (this.element) {
-      this.element.setAttribute('dir', dir);
-      this._formattedDisplay.setAttribute('dir', dir);
-    }
+    this.contentEditableSurface.setAttribute('dir', dir);
+    this.formattedTextSurface.setAttribute('dir', dir);
     this._dir = dir;
     this.updateDisplayStyles();
   }
@@ -221,9 +211,8 @@ export class TextEditorView {
   }
   set wrapsText(wrap: boolean) {
     this._wrapsText = wrap;
-    if (!this.element) return;
-    this.element.style.whiteSpace = wrap ? 'pre-wrap' : 'pre';
-    this._formattedDisplay.style.whiteSpace = wrap ? 'pre-wrap' : 'pre';
+    this.contentEditableSurface.style.whiteSpace = wrap ? 'pre-wrap' : 'pre';
+    this.formattedTextSurface.style.whiteSpace = wrap ? 'pre-wrap' : 'pre';
     this._bridge.poll(); // Line metrics may have changed.
   }
   private _wrapsText: boolean = false;
@@ -308,7 +297,7 @@ export class TextEditorView {
     // we populate the text content of the highlighted element with the
     // text content of the working document.
     const highlighted = document.createElement('div');
-    this._formattedDisplay = highlighted;
+    this.formattedTextSurface = highlighted;
     highlighted.style.outline = 'none';
     highlighted.style.whiteSpace = 'pre';
     highlighted.style.overflowWrap = 'break-word';
@@ -326,15 +315,13 @@ export class TextEditorView {
     // editor is above the highlighted element in the DOM, so that
     // the editor can capture the user's input.
     const editor = highlighted.cloneNode() as HTMLElement;
-    highlighted.style.zIndex = '0';
-    this.element = editor;
+    this.contentEditableSurface = editor;
     editor.setAttribute('contenteditable', 'plaintext-only');
     if (editor.contentEditable !== 'plaintext-only') {
       editor.setAttribute('contenteditable', 'true');
     }
     editor.style.color = 'transparent';
     editor.style.cursor = 'text';
-    editor.style.zIndex = '100';
     editor.style.caretColor = 'white';
     parent.appendChild(editor);
 
@@ -355,7 +342,7 @@ export class TextEditorView {
     this.language = 'text';
     this.updateDisplayStyles();
 
-    if (!this.element) {
+    if (!this.contentEditableSurface) {
       throw new Error('Could not create editor element');
     }
 
@@ -370,20 +357,18 @@ export class TextEditorView {
       });
 
     this._throttledHighlighter = new ThrottledAction(() => {
-      this._formattedDisplay.textContent = this._bridge.document.text.replaceAll('\r', '');
+      this.formattedTextSurface.textContent = this._bridge.document.text.replaceAll('\r', '');
       if (this.highlightElement) {
-        this.highlightElement(this._formattedDisplay);
+        this.highlightElement(this.formattedTextSurface);
       }
     }, 1000 / 60);
 
     this._throttledScroller = new ThrottledAction(() => {
-      if (!this.element)
-        throw new Error('Unexpectedly, No element. Did you forget to call destroy()?');
       this.updateDisplayStyles(false);
-      this.listener.scroll(this.element);
+      this.listener.scroll(this.contentEditableSurface);
     }, 1000 / 60);
 
-    this.on('focus', this.element, () => {
+    this.on('focus', this.contentEditableSurface, () => {
       this._focused = true;
     });
 
@@ -393,7 +378,7 @@ export class TextEditorView {
     };
     this.window.addEventListener('resize', this._resizeChangeListener);
 
-    this.on('blur', this.element, () => {
+    this.on('blur', this.contentEditableSurface, () => {
       this._focused = false;
     });
 
@@ -403,11 +388,11 @@ export class TextEditorView {
     };
     this.window.document.addEventListener('selectionchange', this._selectionChangeListener);
 
-    this.on('scroll', this.element, () => {
+    this.on('scroll', this.contentEditableSurface, () => {
       this._throttledScroller.trigger();
     });
 
-    this.on('keydown', this.element, (event: KeyboardEvent) => {
+    this.on('keydown', this.contentEditableSurface, (event: KeyboardEvent) => {
       if (!this._focused) return;
       if (event.defaultPrevented) return;
       if (event.isComposing) return;
@@ -428,12 +413,12 @@ export class TextEditorView {
       }
     });
 
-    this.on('input', this.element, () => {
+    this.on('input', this.contentEditableSurface, () => {
       if (!this._focused) return;
       this._bridge.poll();
     });
 
-    this.on('keyup', this.element, event => {
+    this.on('keyup', this.contentEditableSurface, event => {
       if (!this._focused) return;
       if (event.defaultPrevented) return;
       if (event.isComposing) return;
@@ -442,14 +427,14 @@ export class TextEditorView {
       this.listener.keyup(editorEvent);
     });
 
-    this.on('cut', this.element, event => {
+    this.on('cut', this.contentEditableSurface, event => {
       if (!this._focused) return;
       if (event.defaultPrevented) return;
       event.preventDefault();
       this.listener.cut(event);
     });
 
-    this.on('paste', this.element, event => {
+    this.on('paste', this.contentEditableSurface, event => {
       if (!this._focused) return;
       if (event.defaultPrevented) return;
       event.preventDefault();
@@ -463,29 +448,28 @@ export class TextEditorView {
    * @param updateEditor Whether or not to update the editor's styles.
    */
   private updateDisplayStyles(updateEditor: boolean = true): void {
-    if (!this.element) return;
+    if (!this.contentEditableSurface) return;
     if (updateEditor) {
-      this.element.style.inset = this.insetWithLeading('0px', this._gutterWidth);
+      this.contentEditableSurface.style.inset = this.insetWithLeading('0px', this._gutterWidth);
     }
-    this._formattedDisplay.style.inset = this.insetWithLeading(
-      `-${this.element.scrollTop}px`,
-      `calc(${(this._dir === 'ltr' ? -1 : 1) * this.element.scrollLeft}px + ${this._gutterWidth})`
+    this.formattedTextSurface.style.inset = this.insetWithLeading(
+      `-${this.contentEditableSurface.scrollTop}px`,
+      `calc(${(this._dir === 'ltr' ? -1 : 1) * this.contentEditableSurface.scrollLeft}px + ${
+        this._gutterWidth
+      })`
     );
   }
 
   /** Removes all event listeners from the DOM element. */
   destroy() {
-    if (!this.element) throw new Error('Editor element has already been destroyed');
-
     while (this._listeners.length > 0) {
       const obj = this._listeners.pop();
       if (obj) {
         const [type, fn] = obj;
-        this.element.removeEventListener(type, fn);
+        this.contentEditableSurface.removeEventListener(type, fn);
       }
     }
-    this.element.remove();
-    this.element = undefined;
+    this.contentEditableSurface.remove();
     if (this._selectionChangeListener) {
       this.window.document.removeEventListener('selectionchange', this._selectionChangeListener);
       this._selectionChangeListener = null;
