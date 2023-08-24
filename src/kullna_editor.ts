@@ -40,6 +40,7 @@ import {TextDocument} from './internals/text_editor';
  * });
  * // Warning! Disabling spellcheck will disable spellcheck for the entire page.
  * editor.spellcheck = false;
+ * editor.wrapsText = true;
  * ```
  *
  * See the Package Documentation {@link @kullna/editor} for more information.
@@ -102,6 +103,13 @@ export interface KullnaEditor {
   /** Gets or sets the direction of the editor (LTR or RTL). */
   get dir(): string;
   set dir(dir: string);
+
+  /**
+   * Ensures a specific line number is within view.
+   *
+   * @param line The line number to scroll to.
+   */
+  scrollToLine(line: number): void;
 
   /**
    * Marks a line as invalid, causing the gutter to re-render it, potentially with new

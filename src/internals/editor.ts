@@ -104,6 +104,7 @@ export class Editor
       const gutter = new Gutter(options.gutter);
       this.gutter = gutter;
       parent.insertBefore(gutter.element, this.view.contentEditableSurface);
+      parent.insertBefore(gutter.background.element, gutter.element);
       gutter.dir = options.dir;
     }
 
@@ -114,7 +115,11 @@ export class Editor
     highlightViewContainer.style.right = '0';
     highlightViewContainer.style.bottom = '0';
     highlightViewContainer.style.overflow = 'hidden';
-    parent.insertBefore(highlightViewContainer, this.view.contentEditableSurface);
+    if (this.gutter) {
+      parent.insertBefore(highlightViewContainer, this.gutter.element);
+    } else {
+      parent.insertBefore(highlightViewContainer, this.view.contentEditableSurface);
+    }
     this.highlightView = new HighlightView(highlightViewContainer);
 
     this.view.gutterWidth = this.gutter ? this.gutter.width : '0px';
@@ -178,6 +183,11 @@ export class Editor
     if (this.gutter) {
       this.gutter.dir = dir;
     }
+  }
+
+  /** @inheritDoc */
+  scrollToLine(line: number): void {
+    this.view.scrollToLine(line);
   }
 
   /** @inheritDoc */
