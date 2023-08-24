@@ -16,6 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>. */
 
 import {LineMetric} from '../text_editor/line_metric';
 import {GutterCustomizer} from './customizer';
+import {GutterBackground} from './gutter_bg';
 import {GutterLineElement} from './line';
 import {GutterOptions} from './options';
 
@@ -41,6 +42,13 @@ export class Gutter {
 
   /** The total number of lines with elements. */
   private lineCount: number = 0;
+
+  /**
+   * The background layer for the gutter.
+   *
+   * @see {@link GutterBackground}
+   */
+  background: GutterBackground;
 
   /**
    * Sets the number of lines in the gutter.
@@ -107,6 +115,7 @@ export class Gutter {
   set dir(value: 'ltr' | 'rtl') {
     this.options.dir = value;
     this.element.dir = value;
+    this.background.dir = value;
     setNumberOfLines(this.element, 0, this.options.renderGutterLine);
     setNumberOfLines(this.element, this.lineCount, this.options.renderGutterLine);
     this.refreshStyles();
@@ -121,8 +130,7 @@ export class Gutter {
     return this.options.border;
   }
   set border(value: boolean) {
-    this.options.border = value;
-    this.refreshStyles();
+    this.background.border = value;
   }
 
   /**
@@ -152,6 +160,8 @@ export class Gutter {
     this.element.style.bottom = '0px';
     this.element.style.overflow = 'hidden';
     this.setNumberOfLines(1);
+
+    this.background = new GutterBackground(this.options);
     this.refreshStyles();
   }
 
@@ -168,28 +178,15 @@ export class Gutter {
   /** Refreshes the styles of the gutter (reapplys the styles to the gutter elements). */
   private refreshStyles() {
     this.element.className = this.options.class ?? '';
+    this.element.style.backgroundColor = 'transparent';
     if (this.options.dir === 'ltr') {
       this.element.style.left = '0px';
       this.element.style.right = 'unset';
       this.element.style.textAlign = 'right';
-      if (this.options.border) {
-        this.element.style.borderRight = '1px solid';
-        this.element.style.borderLeft = 'unset';
-      } else {
-        this.element.style.borderRight = 'unset';
-        this.element.style.borderRight = 'unset';
-      }
     } else {
       this.element.style.right = '0px';
       this.element.style.left = 'unset';
       this.element.style.textAlign = 'left';
-      if (this.options.border) {
-        this.element.style.borderLeft = '1px solid';
-        this.element.style.borderRight = 'unset';
-      } else {
-        this.element.style.borderLeft = 'unset';
-        this.element.style.borderRight = 'unset';
-      }
     }
     this.element.style.width = this.options.width;
   }

@@ -222,6 +222,9 @@
               width: '55px',
               class: 'code-gutter',
               renderGutterLine: (lineNumber, gutterLineElement) => {
+                gutterLineElement.gutterLineWrapper.onclick = () => {
+                  alert(lineNumber);
+                };
                 gutterLineElement.accessorySpan.innerHtml = '';
                 if (lineNumber === 4) {
                   const breakpoint = document.createElement('div');

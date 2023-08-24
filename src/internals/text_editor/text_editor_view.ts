@@ -390,6 +390,7 @@ export class TextEditorView {
 
     this.on('scroll', this.contentEditableSurface, () => {
       this._throttledScroller.trigger();
+      this._bridge.recalculateLineMetrics();
     });
 
     this.on('keydown', this.contentEditableSurface, (event: KeyboardEvent) => {
@@ -458,6 +459,26 @@ export class TextEditorView {
         this._gutterWidth
       })`
     );
+  }
+
+  /**
+   * Scrolls the editor to the given line.
+   *
+   * @param line The line number to scroll to.
+   */
+  scrollToLine(line: number): void {
+    this._bridge.recalculateLineMetrics();
+    const midLine =
+      this._bridge.lineMetrics[line - 1].top + this._bridge.lineMetrics[line - 1].height / 2;
+    if (
+      midLine < this.contentEditableSurface.scrollTop ||
+      midLine > this.contentEditableSurface.scrollTop + this.contentEditableSurface.clientHeight
+    ) {
+      this.contentEditableSurface.scrollTop = Math.min(
+        this.contentEditableSurface.scrollHeight - this.contentEditableSurface.clientHeight,
+        Math.max(0, midLine - this.contentEditableSurface.clientHeight / 2)
+      );
+    }
   }
 
   /** Removes all event listeners from the DOM element. */
