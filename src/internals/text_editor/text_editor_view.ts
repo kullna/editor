@@ -474,9 +474,9 @@ export class TextEditorView {
       midLine < this.contentEditableSurface.scrollTop ||
       midLine > this.contentEditableSurface.scrollTop + this.contentEditableSurface.clientHeight
     ) {
-      this.contentEditableSurface.scrollTop = Math.max(
-        0,
-        midLine - this.contentEditableSurface.clientHeight / 2
+      this.contentEditableSurface.scrollTop = Math.min(
+        this.contentEditableSurface.scrollHeight - this.contentEditableSurface.clientHeight,
+        Math.max(0, midLine - this.contentEditableSurface.clientHeight / 2)
       );
     }
   }
