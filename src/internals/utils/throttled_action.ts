@@ -49,11 +49,11 @@ export class ThrottledAction {
         // Reset the state.
         clearTimeout(this.timeout);
         this.timeout = undefined;
-        this.shouldExecuteAfterDelay = false;
         // After the delay, check if there was another trigger during the delay window.
         if (this.shouldExecuteAfterDelay) {
           this.trigger();
         }
+        this.shouldExecuteAfterDelay = false;
       }, this.delay);
     }
   }
