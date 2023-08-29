@@ -186,6 +186,11 @@ export class Editor
   }
 
   /** @inheritDoc */
+  get naturalHeight(): number {
+    return this.view.naturalHeight;
+  }
+
+  /** @inheritDoc */
   scrollToLine(line: number): void {
     this.view.scrollToLine(line);
   }
@@ -360,6 +365,9 @@ export class Editor
     if (!programmatic) {
       if (this.options.onUpdate) {
         this.options.onUpdate(this.code);
+      }
+      if (this.options.onSelectionFocusChanged) {
+        this.options.onSelectionFocusChanged(this.view.document);
       }
     }
   }

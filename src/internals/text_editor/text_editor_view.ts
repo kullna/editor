@@ -264,6 +264,11 @@ export class TextEditorView {
     this._bridge.pushToDOM(document);
   }
 
+  /** @inheritDoc */
+  get naturalHeight(): number {
+    return this.contentEditableSurface.scrollHeight;
+  }
+
   /**
    * Template pattern for adding an event listener to the DOM and our list.
    *

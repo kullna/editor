@@ -104,6 +104,9 @@ export interface KullnaEditor {
   get dir(): string;
   set dir(dir: string);
 
+  /** Gets the total height of the editor's content. */
+  get naturalHeight(): number;
+
   /**
    * Ensures a specific line number is within view.
    *
