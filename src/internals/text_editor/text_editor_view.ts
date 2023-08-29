@@ -266,6 +266,11 @@ export class TextEditorView {
 
   /** @inheritDoc */
   get naturalHeight(): string {
+    if (this.lineMetrics.length === 0) {
+      return `calc(${getComputedStyle(this.contentEditableSurface).paddingTop} + ${
+        getComputedStyle(this.contentEditableSurface).paddingBottom
+      })`;
+    }
     const lastLine = this.lineMetrics[this.lineMetrics.length - 1];
     const bottomContent = lastLine.top + lastLine.height;
     let bottomPadding = getComputedStyle(this.contentEditableSurface).paddingBottom;
