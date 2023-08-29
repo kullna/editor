@@ -68,8 +68,8 @@ export class DomBridge {
     if (document.perceptuallyEquals(oldDocument)) {
       this._onDocumentSelectionChangedCallbacks.forEach(callback => callback(document));
     } else {
-      this._onDocumentContentAndSelectionChangedCallbacks.forEach(callback => callback(document));
       this.recalculateLineMetrics();
+      this._onDocumentContentAndSelectionChangedCallbacks.forEach(callback => callback(document));
     }
   }
 

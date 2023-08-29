@@ -104,8 +104,13 @@ export interface KullnaEditor {
   get dir(): string;
   set dir(dir: string);
 
-  /** Gets the total height of the editor's content. */
-  get naturalHeight(): number;
+  /**
+   * Gets the total height of the editor's content as a CSS value such as `123px` or `min(x, y)`.
+   *
+   * @remarks
+   *   Intended to be queried as part of an `onUpdate` implementation.
+   */
+  get naturalHeight(): string;
 
   /**
    * Ensures a specific line number is within view.

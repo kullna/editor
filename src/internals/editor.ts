@@ -186,7 +186,7 @@ export class Editor
   }
 
   /** @inheritDoc */
-  get naturalHeight(): number {
+  get naturalHeight(): string {
     return this.view.naturalHeight;
   }
 
