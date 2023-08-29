@@ -19,6 +19,7 @@
     <a href="https://www.npmjs.com/package/@kullna/editor">
         <img src="https://img.shields.io/npm/v/@kullna/editor?color=dc322f" alt="npm">
     </a>
+<a href="https://app.fossa.com/projects/git%2Bgithub.com%2Fkullna%2Feditor?ref=badge_shield" alt="FOSSA Status"><img src="https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkullna%2Feditor.svg?type=shield"/></a>
     <img src="https://deno.bundlejs.com/?q=@kullna/editor&badge=small" alt="npm bundle size">
     <a href="https://www.gnu.org/licenses/lgpl-3.0">
         <img src="https://img.shields.io/badge/License-LGPL_v3-b58900.svg" alt="License: LGPL v3">
@@ -49,6 +50,9 @@ To address this gap, we're introducing `@kullna/editor`. A simple yet versatile 
 designed with extensibility in mind and built-in RTL support. If you're looking for a lightweight
 code editor for your web application, we hope you'll find `@kullna/editor` useful, and we welcome
 your feedback and contributions.
+
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkullna%2Feditor.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fkullna%2Feditor?ref=badge_large)
 
 ## Features
 
