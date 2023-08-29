@@ -264,6 +264,17 @@ export class TextEditorView {
     this._bridge.pushToDOM(document);
   }
 
+  /** @inheritDoc */
+  get naturalHeight(): string {
+    const lastLine = this.lineMetrics[this.lineMetrics.length - 1];
+    const bottomContent = lastLine.top + lastLine.height;
+    let bottomPadding = getComputedStyle(this.contentEditableSurface).paddingBottom;
+    if (!bottomPadding || bottomPadding.length === 0) {
+      bottomPadding = '0px';
+    }
+    return `calc(${bottomContent}px + ${bottomPadding})`;
+  }
+
   /**
    * Template pattern for adding an event listener to the DOM and our list.
    *

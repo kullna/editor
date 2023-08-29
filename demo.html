@@ -194,8 +194,14 @@
         parent.appendChild(element);
 
         const editor = KullnaEditor.createEditor(element, options);
+
+        const highlight = editor.createHighlight();
+        highlight.lineNumber = 0;
+        highlight.cssClass = 'code-gutter-highlight';
+        highlight.visible = true;
+
         editor.onSelectionFocusChanged(document => {
-          editor.highlightedLine = document.currentLineNumber;
+          highlight.lineNumber = document.currentLineNumber;
         });
         editor.code = defaultValue;
 
@@ -210,7 +216,7 @@
         const standard = demoWithOptions(
           '#demos',
           'standard',
-          'Standard Configuration',
+          'Standard Configuration (Auto-Sizing)',
           {
             language: 'html',
             highlightElement: e => {
@@ -252,6 +258,10 @@
         standardHighlight.lineNumber = 4;
         standardHighlight.visible = true;
         standardHighlight.cssClass = 'breakpoint-highlight';
+        standard.onUpdate(code => {
+          const element = document.getElementById('editor-standard');
+          element.style.height = standard.naturalHeight;
+        });
 
         demoWithOptions(
           '#demos',
